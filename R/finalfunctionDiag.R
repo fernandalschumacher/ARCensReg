@@ -1,7 +1,6 @@
-#source('princfunctionDiag.R')
 
-InfDiag = function(theta,yest,yyest,x,k=3,plots=T,indpar=rep(1,length(theta)),
-                   perturbation ='y',indcolx = rep(1,ncol(x)))
+InfDiag = function(theta, yest, yyest, x, k=3, plots=T, indpar=rep(1,length(theta)),
+                   perturbation='y', indcolx=rep(1,ncol(x)))
 {
   n = length(yest)
 
@@ -38,12 +37,12 @@ InfDiag = function(theta,yest,yyest,x,k=3,plots=T,indpar=rep(1,length(theta)),
   #Load required libraries
 
   #Running the algorithm
-  if (perturbation=='y') M0 = InfDiagys(theta=theta,yest=yest,yyest=yyest,x=x,k=k,
-                                        plots=plots,indpar=indpar)
-  if (perturbation=='Sigma') M0 = InfDiagSigs(theta=theta,yest=yest,yyest=yyest,x=x,k=k,
-                                              plots=plots,indpar=indpar)
-  if (perturbation=='x') M0 = InfDiagxps(theta=theta,yest=yest,yyest=yyest,x=x,k=k,
-                                    plots=plots,indp=indcolx,indpar=indpar)
+  if (perturbation=='y') M0 = InfDiagys(theta=theta, yest=yest, yyest=yyest, x=x, k=k,
+                                        plots=plots, indpar=indpar)
+  if (perturbation=='Sigma') M0 = InfDiagSigs(theta=theta, yest=yest, yyest=yyest, x=x, k=k,
+                                              plots=plots, indpar=indpar)
+  if (perturbation=='x') M0 = InfDiagxps(theta=theta, yest=yest, yyest=yyest, x=x, k=k,
+                                    plots=plots, indp=indcolx, indpar=indpar)
 
   cat('\n')
   cat("Perturbation scheme:",perturbation)

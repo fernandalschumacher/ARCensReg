@@ -1,43 +1,52 @@
+\docType{data}
 \name{CloudCeiling}
 \alias{CloudCeiling}
-\docType{data}
 \title{
-Cloud Ceiling Height
+Cloud ceiling height
 }
 \description{
-The cloud ceiling heights, collected by the National Center for Atmospheric Research (NCAR), were observed hourly in San Francisco during the month of March 1989, consisting of n=716 observations (Park et al., 2007).
+The cloud ceiling heights, collected by the National Center for Atmospheric Research (NCAR), 
+were observed hourly in San Francisco during March 1989, consisting of n=716 observations 
+\insertCite{park2007censored}{ARCensReg}.
 }
-
-\usage{data(CloudCeiling)}
+\usage{
+data(CloudCeiling)
+}
 \format{
-  This data frame contains the following columns:
-  \describe{
-    \item{\code{y}}{logarithm of the cloud ceiling heights.}
-      \item{\code{cc}}{right censoring indicator (1 if the observation is right censored and 0 otherwise).}
-  }
+This data frame contains the following columns:
+\describe{
+    \item{\code{y}}{Logarithm of the cloud ceiling heights.}
+    \item{\code{cc}}{Right censoring indicator (1 if the observation is right-censored and 0 otherwise).}
+}
 }
 \source{
-Park, J. W., Genton, M. G. & Ghosh, S. K. (2007). Censored time series analysis with autoregressive moving average models. Journal of Computational and Graphical Statistics, 18(4), 797-817.
+\insertRef{park2007censored}{ARCensReg}
 }
-
-\seealso{\code{\link{ARCensReg}}}
-
 \examples{
-\dontrun{
+library(ggplot2)
+
 data(CloudCeiling)
+ggplot(CloudCeiling) + geom_line(aes(x=1:length(y), y=y)) + 
+  labs(x="Time") + theme_bw()
 
-plot.ts(CloudCeiling$y)
-
-#Proportion of censoring
+# Proportion of censoring
 prop.table(table(CloudCeiling$cc))
 
-#A censored regression model
-##this may take a long time due to the number of censored observations.
-##For other examples see help(ARCensReg).
+\dontrun{
+# A censored regression model
+## This may take a long time due to the number of censored observations.
+## For other examples see help(ARCensReg).
 
-x = as.matrix(rep(1,length(CloudCeiling$y)))
+x   = as.matrix(rep(1, length(CloudCeiling$y)))
+cc  = CloudCeiling$cc
+lcl = CloudCeiling$y
+ucl = rep(Inf, length(CloudCeiling$y))
 miss =  which(is.na(CloudCeiling$y))
-AR_reg = ARCensReg(CloudCeiling$cc,CloudCeiling$y,x,cens='right',miss=miss,p=1,tol=.001)
+cc[miss]  = 1
+lcl[miss] = -Inf
+AR_reg = ARCensReg(cc, lcl, ucl, CloudCeiling$y, x, p=1, tol=.001)}
 }
+\seealso{
+\code{\link{ARCensReg}}, \code{\link{ARtCensReg}}
 }
 \keyword{datasets}

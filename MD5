@@ -6,11 +6,10 @@ d2647f8aa39540a3b07adea1fb26ae59 *NAMESPACE
 9e5a1de76e0402becf33d9563b6bc8f4 *R/finalfunctionGerar.R
 c2116c4a73dee28f182ac7341502e519 *R/princfunction.R
 221475f06afa1e3e388f2facbb0295ae *R/princfunctionDiag.R
-2d5f084bbe88c5e7c315cadcc1ce3e91 *R/princfunctionGerar.R
 310527e8dd9457dd91df1949d250eb3a *data/CloudCeiling.txt.gz
 54bda570ddbf2c509da4000967b304d0 *data/phosphorus.txt.gz
 779ed1d9a586d5782d28a71f7a3f25fa *man/InfDiag.Rd
-0511f7e116e3c25343b830ef45ccc8be *man/arcensreg.Rd
-b22cba493d22818ce4e96ce056907a1e *man/cloudceiling.Rd
+0511f7e116e3c25343b830ef45ccc8be *man/ARCensReg.Rd
+b22cba493d22818ce4e96ce056907a1e *man/CloudCeiling.Rd
 25e2dcc6743d2858f10fb272a19fd975 *man/phosphorus.Rd
 0bdec04fefc4fdee75697f24a8d74e45 *man/rARCens.Rd

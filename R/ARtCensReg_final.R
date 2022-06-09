@@ -1,6 +1,7 @@
+globalVariables(c("z","lag","..density.."))
 
-ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001, M=10, 
-                     perc=0.25, MaxIter=400, pc=0.18, show_se=TRUE, quiet=FALSE){
+ARtCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001, M=10,
+                       perc=0.25, MaxIter=400, pc=0.18, nufix=NULL, show_se=TRUE, quiet=FALSE){
   m = length(y)
   
   if (!is.numeric(y)) stop("y must be a numeric vector")
@@ -10,15 +11,15 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
   
   ## Verify error at parameters specification
   #No data
-  if ( (length(x) == 0) | (length(y) == 0) | (length(cc) == 0)) stop("All parameters must be provided")
-  
+  if ((length(x) == 0) | (length(y) == 0) | (length(cc) == 0)) stop("All parameters must be provided")
+
   #Validating if exists NA's
-  if (sum(cc%in%c(0,1)) < length(cc)) stop("The elements of the vector cc must be 0 or 1")
+  if (sum(cc[1:p]) > 0) stop("The first p values in y must be completely observed")
+  if (sum(cc%in%c(0,1))< length(cc)) stop("The elements of the vector cc must be 0 or 1")
   if (sum(is.na(x)) > 0) stop("There are some NA values in x")
   if (sum(is.na(cc)) > 0) stop("There are some NA values in cc")
   miss = which(is.na(y))
-  if (length(miss)>0) { if (sum(cc[miss]) != length(miss)) stop ("NA values in y must be specified through arguments cc, lcl, and ucl")
-  } else { miss = NULL }
+  if (sum(cc[miss]) != length(miss)) stop ("NA values in y must be specified through arguments cc, lcl, and ucl")
   
   #Validating dims data set
   if (ncol(as.matrix(y)) > 1) stop("y must have just one column")
@@ -32,7 +33,7 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
     if (length(miss)>0){
       censor = (cc==1 & !is.na(y))
       if (any(is.infinite(lcl[censor])) & any(is.infinite(ucl[censor]))) stop("lcl or ucl must be finite for censored data")
-    } else { 
+    } else {
       if (any(is.infinite(lcl[cc==1])) & any(is.infinite(ucl[cc==1]))) stop("lcl or ucl must be finite for censored data") 
     }
     if (length(lcl) != m) stop("lcl does not have the same length than y")
@@ -49,10 +50,13 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
     if (sum(is.na(x_pred))>0) stop("There are some NA values in x_pred")
     if (!is.numeric(x_pred)) stop("x_pred must be a numeric matrix")
   }
-
-  #if (sum(miss %in% 1:m)<length(miss) ) stop("miss must indicate the index of the missing data on y")
-
+  
   #Validating supports
+  if (!is.null(nufix)){ 
+    if (length(c(nufix)) != 1) stop("nufix must be a positive value or 'NULL'")
+    if (!is.numeric(nufix)) stop("nufix must be a positive value")
+    if (nufix <= 2) stop("nufix must be a positive value (greater than 2)")
+  }
   if (length(p) != 1) stop("p must be a positive integer value")
   if (!is.numeric(p)) stop("p must be a positive integer value")
   if (p!=round(p) | p<=0) stop("p must be a positive integer value")
@@ -67,48 +71,34 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
   if (perc>=1 | perc<0) stop("perc must be a real number in [0,1)")
   if (!is.logical(show_se)) stop("show_se must be TRUE or FALSE")
   if (!is.logical(quiet)) stop("quiet must be TRUE or FALSE")
-
-  #Load required libraries
-
+  
   #Running the algorithm
   if (!quiet) {
-  cat('\n')
-  call <- match.call()
-  cat("Call:\n")
-  print(call)
-  cat('\n')
+    cat('\n')
+    call <- match.call()
+    cat("Call:\n")
+    print(call)
+    cat('\n')
   }
-  out = suppressWarnings(SAEM(cc, lcl, ucl, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol, show_se, TRUE, quiet))
-  l = ncol(x)
-  lab = numeric(p +l +1)
-  if (sum(abs(x[,1])) == nrow(x)){ for (i in 1:ncol(x)) lab[i] = paste('beta',i-1,sep='') 
-  } else { for (i in 1:ncol(x)) lab[i] = paste('beta',i,sep='') }
-  lab[l+1] = 'sigma2'
-  for (i in ((l+2):length(lab))) lab[i] = paste('phi',i-l-1,sep='')
+  out = suppressWarnings(SAEM_temporalT(cc, lcl, ucl, y, x, p, x_pred, tol, M, perc, MaxIter, pc, nufix, show_se, quiet))
+  q = ncol(x)
+  if (is.null(nufix)){ lab = numeric(p+q+2); lab[p+q+2] = 'nu' } else { lab = numeric(p+q+1) }
+  if (sum(abs(x[,1])) == nrow(x)){ for (i in 1:q) lab[i] = paste('beta',i-1,sep='') 
+  } else { for (i in 1:q) lab[i] = paste('beta',i,sep='') }
+  lab[q+1] = 'sigma2'
+  for (i in ((q+2):(p+q+1))) lab[i] = paste('phi',i-q-1,sep='')
   if (show_se) {
-    tab = round(rbind(out$theta,out$ep),4)
+    tab = round(rbind(out$res$theta, out$res$SE),4)
     colnames(tab) = lab
     rownames(tab) = c("","s.e.")
   } else {
-    tab = round(rbind(out$theta),4)
+    tab = round(rbind(out$res$theta),4)
     colnames(tab) = lab
     rownames(tab) = c("")
   }
-  critFin = c(out$loglik, out$AIC, out$BIC, out$AICcorr)
-  critFin = round(t(as.matrix(critFin)),digits=3)
-  dimnames(critFin) = list(c("Value"),c("Loglik", "AIC", "BIC","AICcorr"))
-
-
-  if (!is.null(x_pred)) res = list(beta=out$beta, sigma2=out$sigmae, phi=out$phi1, pi1=out$pi1, theta=out$theta, SE=out$ep,
-                                   loglik=out$loglik, AIC=out$AIC, BIC=out$BIC, AICcorr=out$AICcorr, 
-                                   pred=out$pred, criteria=out$criteria)
-  else res = list(beta=out$beta, sigma=out$sigmae, phi=out$phi1, pi1=out$pi1, theta=out$theta, SE=out$ep,
-            loglik=out$loglik, AIC=out$AIC, BIC=out$BIC, AICcorr=out$AICcorr, criteria=out$criteria)
-  if (sum(cc)==0){ obj.out = list(res = res, y=y, x=x)
-  } else { obj.out = list(res=res, yest=out$yest, yyest=out$yyest, x=x, iter = out$iter) }
+  obj.out = list(res=out$res, yest=out$SAEMy, uest=out$SAEMu, x=x, iter=out$iter)
   obj.out$call = match.call()
   obj.out$tab = tab
-  obj.out$critFin = critFin
   if (sum(cc) == 0){ cens = "no-censoring" 
   } else {
     if (sum(cc) == length(miss)){ cens = "missing"
@@ -119,29 +109,30 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
     }
   }
   obj.out$cens = cens
-  obj.out$nmiss = ifelse(is.null(miss),0,length(miss))
+  obj.out$nmiss = length(miss)
   obj.out$ncens = sum(cc) - obj.out$nmiss
   obj.out$converge = (out$iter < MaxIter)
   obj.out$MaxIter = MaxIter
   obj.out$M = M
   obj.out$pc = pc
-  obj.out$time = out$timediff
+  obj.out$time = out$time
   #plot
   obj.out$plot$cpl = pc*MaxIter
-  obj.out$plot$npar = l+1+p
+  obj.out$plot$npar = length(out$res$theta)
   obj.out$plot$labels = list()
-  if (sum(abs(x[,1]))==nrow(x)) { for(i in 1:l){obj.out$plot$labels[[i]] = bquote(beta[.(i-1)])} 
-    } else { for(i in 1:l){obj.out$plot$labels[[i]] = bquote(beta[.(i)])} }
-  obj.out$plot$labels[[l+1]] = bquote(sigma^2)
-  for(i in 1:p){obj.out$plot$labels[[i+l+1]] = bquote(phi[.(i)])}
+  if (sum(abs(x[,1]))==nrow(x)) { for(i in 1:q){obj.out$plot$labels[[i]] = bquote(beta[.(i-1)])} 
+    } else { for(i in 1:q){obj.out$plot$labels[[i]] = bquote(beta[.(i)])} }
+  obj.out$plot$labels[[q+1]] = bquote(sigma^2)
+  for(i in 1:p){obj.out$plot$labels[[i+q+1]] = bquote(phi[.(i)])}
+  if (obj.out$plot$npar == (p+q+2)) obj.out$plot$labels[[p+q+2]] = bquote(nu)
   obj.out$plot$Theta = out$Theta
   #class
-  class(obj.out)  = 'ARpCRM' #ifelse(sum(cc)==0,'ARp-LRM','ARp-CRM')
+  class(obj.out)  = 'ARtpCRM'
   invisible(obj.out)
 }
 
 #' @export
-print.ARpCRM = function(x, ...){
+print.ARtpCRM = function(x, ...){
   cat('\n')
   cat("Call:\n")
   print(x$call)
@@ -151,16 +142,10 @@ print.ARpCRM = function(x, ...){
   cat('---------------------------------------------------\n')
   cat('\n')
   cat('---------\n')
-  cat('Estimates\n')
+  cat('Estimates:\n')
   cat('---------\n')
   cat('\n')
   print(x$tab)
-  cat('\n')
-  cat('------------------------\n')
-  cat('Model selection criteria\n')
-  cat('------------------------\n')
-  cat('\n')
-  print(x$critFin)
   cat('\n')
   cat('-------\n')
   cat('Details\n')
@@ -185,9 +170,7 @@ print.ARpCRM = function(x, ...){
 }
 
 #' @export
-plot.ARpCRM = function(x, ...) {
-  if (x$ncens == 0) stop("plot only defined for cases with censoring")
-  
+plot.ARtpCRM = function(x, ...) {
   count = x$iter
   npar  = x$plot$npar
   label = x$plot$labels
@@ -195,7 +178,7 @@ plot.ARpCRM = function(x, ...) {
   
   for (i in 1:npar){
     data1 = data.frame(z=x$plot$Theta[,i])
-    myplot[[i]] = ggplot(data1, aes(x=seq(1,count), y=z)) + geom_line() +
+    myplot[[i]] = ggplot(data1, aes(x=seq(0,count), y=z)) + geom_line() +
       geom_vline(xintercept=x$plot$cpl, color="red", linetype="twodash") +
       labs(x="Iteration", y=label[[i]]) + theme_bw()
   }
@@ -203,46 +186,4 @@ plot.ARpCRM = function(x, ...) {
   grid.arrange(grobs=myplot, nrow=nrows, ncol=3)
 }
 
-
-#' @export
-residuals.ARpCRM = function(object, plot=TRUE, ...) {
-  
-  x = matrix(object$x)
-  p = length(object$res$phi)
-  m = nrow(x)
-  residuals = numeric(m)
-  residuals[1:p] = 0
-  
-  if (object$cens == "no-censoring"){
-    res = object$y - x%*%object$res$beta
-    for (i in (p+1):m) residuals[i] = res[i] - sum(object$res$phi*res[(i-1):(i-p)])
-  } else {
-    res = object$yest - x%*%object$res$beta
-    for (i in (p+1):m) residuals[i] = res[i] - sum(object$res$phi*res[(i-1):(i-p)])
-  }
-  
-  if (plot){
-    sigma = sqrt(object$res$sigma)
-    resid = data.frame(resid = residuals/sigma)
-    #
-    f1 = ggplot(resid, aes(x=seq(1,m),y=resid)) + geom_point() + labs(x="Time", y="Quantile Residual") + 
-      geom_hline(yintercept=c(-2,0,2), color="red", linetype="twodash") + theme_bw()
-    #
-    bacfdf = with(acf(resid, plot=FALSE), data.frame(lag, acf))
-    f2 = ggplot(data=bacfdf, aes(x=lag, y=acf)) + geom_hline(aes(yintercept=0)) + theme_bw() +
-      geom_segment(aes(xend=lag, yend=0)) + labs(x="Lag", y="ACF") +
-      geom_hline(yintercept=c(qnorm(0.975)/sqrt(m),-qnorm(0.975)/sqrt(m)), colour="red", linetype="twodash")
-    #
-    f3 = ggplot(resid, aes(x=resid)) + geom_histogram(aes(y=..density..), fill="grey", color="black", bins=15) +
-      stat_function(fun=dnorm, col="red", linetype="twodash") + labs(x="Quantile Residual",y="Density") + theme_bw()
-    #
-    f4 = ggplot(resid, aes(sample=resid)) + stat_qq_band(distribution="norm", identity=TRUE) + 
-      stat_qq_line(distribution="norm", color="red", linetype="twodash", identity=TRUE) +
-      stat_qq_point(distribution="norm", identity=TRUE, size=1, alpha=0.5) + 
-      labs(x="Theoretical Quantiles", y="Sample Quantiles") + theme_bw()
-    #
-    grid.arrange(f1, f2, f3, f4, nrow=2)
-  }
-  invisible(residuals)
-}
 
