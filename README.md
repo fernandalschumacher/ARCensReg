@@ -115,42 +115,30 @@ and standard errors can be visualized through functions `summary` and
 
 ``` r
 summary(fit2)
-#> 
+#> ---------------------------------------------------
+#>   Censored Linear Regression Model with AR Errors 
+#> ---------------------------------------------------
 #> Call:
 #> ARCensReg(cc = dat$data$cc, lcl = dat$data$lcl, ucl = dat$data$ucl, 
 #>     y = dat$data$y, x = x, p = 2, pc = 0.15, quiet = TRUE)
 #> 
-#> ---------------------------------------------------
-#>   Censored Linear Regression Model with AR Errors 
-#> ---------------------------------------------------
-#> 
-#> ---------
-#> Estimates
-#> ---------
-#> 
+#> Estimated parameters:
 #>       beta0   beta1 sigma2   phi1    phi2
 #>      1.0830 -1.0965 0.4713 0.4690 -0.3883
 #> s.e. 0.1465  0.2389 0.0689 0.0949  0.0941
 #> 
-#> ------------------------
-#> Model selection criteria
-#> ------------------------
-#> 
+#> Model selection criteria:
 #>         Loglik     AIC     BIC AICcorr
 #> Value -105.279 220.558 233.583 221.196
 #> 
-#> -------
-#> Details
-#> -------
-#> 
-#> Type of censoring = left
-#> Number of missing values = 0
-#> Convergence reached? = TRUE
-#> Iterations = 168 / 400
-#> MC sample = 10
-#> Cut point = 0.15
-#> Processing time = 1.112404 mins
-#> 
+#> Details:
+#> Type of censoring: left 
+#> Number of missing values: 0 
+#> Convergence reached?: TRUE 
+#> Iterations: 168 / 400 
+#> MC sample: 10 
+#> Cut point: 0.15 
+#> Processing time: 58.53818 secs
 ```
 
 Moreover, for censored data, the convergence plot of the parameter
@@ -168,12 +156,12 @@ a censored linear regression model with Gaussian AR errors of order
 
 ``` r
 y2 = dat$data$y
-y2[81] = 7
+y2[81] = 6
 fit3 = ARCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, y2, x, p=2,
                  show_se=FALSE, quiet=TRUE)
 fit3$tab
 #>   beta0   beta1 sigma2   phi1    phi2
-#>  1.2021 -1.2527 0.8531 0.3426 -0.3061
+#>  1.1702 -1.2065 0.7237 0.3812 -0.3355
 ```
 
 It is worth noting that the parameter estimates were affected because of
@@ -185,9 +173,8 @@ observations 80 to 82 may be influential.
 
 ``` r
 M0y = InfDiag(fit3, k=3.5, perturbation="y")
-#> 
-#> Perturbation scheme: y
-#> Benchmark = 0.07
+#> Perturbation scheme: y 
+#> Benchmark: 0.059 
 #> Detected points: 80 81 82
 plot(M0y)
 ```
@@ -256,7 +243,7 @@ For comparison, we fit the same dataset considering the normal
 distribution (i.e., disregarding the heavy tails) and compute the
 corresponding quantile residuals. The resulting plots are given below,
 where we can see clear signs of non-normality, such as large residuals
-and several points outside the confidence band in the Q-Q plots.
+and some points outside the confidence band in the Q-Q plots.
 
 ``` r
 fit3 = ARCensReg(dat2$data$cc, dat2$data$lcl, dat2$data$ucl, dat2$data$y, x,

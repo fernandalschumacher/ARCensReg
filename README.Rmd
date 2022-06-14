@@ -102,7 +102,7 @@ Now, we perturb the observation $81$ by making it equal to 6 and then fit a cens
 
 ```{r example1.5}
 y2 = dat$data$y
-y2[81] = 7
+y2[81] = 6
 fit3 = ARCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, y2, x, p=2,
                  show_se=FALSE, quiet=TRUE)
 fit3$tab
@@ -150,7 +150,7 @@ plot(res)
 ```
 
 For comparison, we fit the same dataset considering the normal distribution (i.e., disregarding the heavy tails) and compute the corresponding quantile residuals. The resulting plots are given below, where we can see clear signs
-of non-normality, such as large residuals and several points outside the confidence band in the Q-Q plots.
+of non-normality, such as large residuals and some points outside the confidence band in the Q-Q plots.
 
 ```{r example2.3}
 fit3 = ARCensReg(dat2$data$cc, dat2$data$lcl, dat2$data$ucl, dat2$data$y, x,

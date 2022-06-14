@@ -34,14 +34,11 @@ InfDiag = function(object, k=3, indpar=rep(1,length(object$theta)), indcolx=rep(
                                          k=k, indp=indcolx, indpar=indpar)
 
   bench = mean(M0) + k*sd(M0)
-  cat('\n')
-  cat("Perturbation scheme:",perturbation)
-  cat('\n')
-  cat('Benchmark =',round(bench,3))
-  cat('\n')
-  detecpoints= which(M0>bench)
-  if (length(detecpoints)>0) cat('Detected points:',detecpoints,'\n')
-  else cat('Detected points:',0,'\n')
+  cat("Perturbation scheme:", perturbation, '\n')
+  cat('Benchmark:', round(bench,3), '\n')
+  detecpoints = which(M0>bench)
+  if (length(detecpoints)>0) cat('Detected points:', detecpoints, '\n')
+  else cat('Detected points:', 0, '\n')
   
   M1 = list(M0=M0, perturbation=perturbation, benchmark=bench)
   class(M1) = "DiagARpCRM"

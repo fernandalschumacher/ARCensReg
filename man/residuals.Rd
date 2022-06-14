@@ -1,5 +1,5 @@
 \name{residuals}
-\alias{residuals}
+\alias{residuals.ARpCRM}\alias{residuals.ARtpCRM}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Extract model residuals from ARpCRM and ARtpCRM objects
