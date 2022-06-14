@@ -11,9 +11,9 @@
 ## Algoritmo SAEM ##
 ################################################################################
 #cc must be 1 for miss
-#graphs.residuals=FALSE,  
+#graphs.residuals=FALSE, show_yy=TRUE,  
 SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol, 
-                show_ep, show_yy=TRUE, quiet){
+                show_ep, quiet){
   if (!quiet) pb = txtProgressBar(min = 0, max = MaxIter, style = 3)
   
   #valores iniciais
@@ -45,7 +45,7 @@ SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol,
   r = length(teta)
   tempoi = Sys.time()
 
-  if ((sum(cc)==0)&(length(miss)==0)) {
+  if ((sum(cc)==0) & (length(miss)==0)) {
     teta1 = teta
     media = x%*%beta1
     V = MatArp(phi1,m)
@@ -63,11 +63,11 @@ SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol,
     dift = tempof-tempoi
     if (!quiet) setTxtProgressBar(pb, MaxIter)
     ####fitted and residuals
-    residuals = numeric(m)
-    residuals[1:p] = 0
-    res = y-x%*%beta1
-    for (i in (p+1):m) residuals[i] = res[i] - sum(phi1*res[(i-1):(i-p)])
-    predict = y - residuals
+    #residuals = numeric(m)
+    #residuals[1:p] = 0
+    #res = y-x%*%beta1
+    #for (i in (p+1):m) residuals[i] = res[i] - sum(phi1*res[(i-1):(i-p)])
+    #predict = y - residuals
     ##
     #if (graphs.residuals) {
     #  par(mfrow=c(3,2))
@@ -87,35 +87,30 @@ SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol,
       h = nrow(x_pred)
       sig_pred = MatArp(phi1,m+h)*sigmae
       pred = x_pred%*%beta1 + sig_pred[m+1:h,1:m]%*%solve(sig_pred[1:m,1:m])%*%(y-x%*%beta1)
-      if (show_yy) {
+      #if (show_yy) {
         obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, loglik=loglik,
                       AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, ep=ep_par,
-                      pred=pred, timediff=dift, yest=y, yyest=y%*%t(y), residuals=residuals, predict=predict)
-      }
-      else {
-        obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, loglik=loglik,
-                        AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, ep=ep_par,
-                        pred=pred, timediff=dift, yest=y, residuals=residuals, predict=predict)
-
-      }
-    }
-    else {
-      if (show_yy) {
+                      pred=pred, timediff=dift, yest=y, yyest=y%*%t(y))
+      #}
+      #else {
+      #  obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, loglik=loglik,
+      #                  AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, ep=ep_par,
+      #                  pred=pred, timediff=dift, yest=y)
+      #}
+    } else {
+      #if (show_yy) {
         obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, loglik=loglik,
                       AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, ep=ep_par, timediff=dift,
-                      yest=y, yyest=y%*%t(y), residuals=residuals, predict=predict)
-      }
-      else{
-        obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, loglik=loglik,
-                        AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, ep=ep_par, timediff=dift,
-                        yest=y, residuals=residuals, predict=predict)
-      }
+                      yest=y, yyest=y%*%t(y))
+      #}
+      #else{
+      #  obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, loglik=loglik,
+      #                  AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, ep=ep_par, timediff=dift,
+      #                  yest=y, residuals=residuals, predict=predict)
+      #}
     }
-
-    class(obj.out) = "NCens"
-  }
-
-  else {
+    #class(obj.out) = "NCens"
+  } else {
 
     MG = round(M/(1-perc),0)
     M0 = MG - M #burn in
@@ -149,7 +144,7 @@ SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol,
     SAEM_xx = array(data=0,dim=c(MaxIter+1,l,l))
     SAEM_xy = array(data=0,dim=c(MaxIter+1,l))
     SAEM_y = array(data=0,dim=c(MaxIter+1,sum(cc)))
-    if (show_yy) SAEM_yy = array(data=0,dim=c(MaxIter+1,m,m))
+    SAEM_yy = array(data=0,dim=c(MaxIter+1,m,m))
     SAEM_D = array(data=0,dim=c(MaxIter+1,p+1,p+1))
     if (show_ep & (sum(cc)!=0)) {
       SAEM_delta = array(data=0,dim=c(MaxIter+1,r))
@@ -191,7 +186,7 @@ SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol,
       somaxx = matrix(0,l,l)
       somaxy = matrix(0,l,1)
       somay  = matrix(0,sum(cc),1)
-      if (show_yy) somayy = matrix(0,m,m)
+      somayy = matrix(0,m,m)
       somadelta = matrix(0,r,1)
       somaG = matrix(0,r,r)
       invV = solve(V)
@@ -201,7 +196,7 @@ SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol,
         somaxx = somaxx + (t(x)%*%invV%*%x)
         somaxy = somaxy + t(x)%*%invV%*%(yi)
         somay  = somay + as.matrix(yi[cc==1,])
-        if (show_yy) somayy = somayy + yi%*%t(yi)
+        somayy = somayy + yi%*%t(yi)
         if (show_ep & (sum(cc)!=0)) {
           J = Jt(teta,yi,x)
           H = Ht(teta,yi,x)
@@ -216,7 +211,7 @@ SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol,
       E_xx = (1/M)*somaxx
       E_xy = (1/M)*somaxy
       E_y  = (1/M)*somay
-      if (show_yy) E_yy = (1/M)*somayy
+      E_yy = (1/M)*somayy
       if (show_ep & (sum(cc)!=0)) {
         E_delta = 1/M * somadelta
         E_G = 1/M*somaG
@@ -228,7 +223,7 @@ SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol,
       SAEM_xx[count+1,,] = SAEM_xx[count,,] + seqq[count]*(E_xx - SAEM_xx[count,,])
       SAEM_xy[count+1,] = SAEM_xy[count,] + seqq[count]*(E_xy - SAEM_xy[count,])
       SAEM_y[count+1,] = SAEM_y[count,] + seqq[count]*(E_y - SAEM_y[count,])
-      if (show_yy) SAEM_yy[count+1,,] = SAEM_yy[count,,] + seqq[count]*(E_yy - SAEM_yy[count,,])
+      SAEM_yy[count+1,,] = SAEM_yy[count,,] + seqq[count]*(E_yy - SAEM_yy[count,,])
       if (show_ep & (sum(cc)!=0)) {
         SAEM_delta[count+1,] = SAEM_delta[count,] + seqq[count]*(E_delta - SAEM_delta[count,])
         SAEM_G[count+1,,] = SAEM_G[count,,] + seqq[count]*(E_G - SAEM_G[count,,])
@@ -291,11 +286,11 @@ SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol,
     ###
     #if (length(miss)>0) { yest[miss] = yi[miss] }
     ####fitted and residuals
-    residuals = numeric(m)
-    residuals[1:p] = 0
-    res = yest-x%*%beta1
-    for (i in (p+1):m) residuals[i] = res[i] - sum(phi1*res[(i-1):(i-p)])
-    predict = yest - residuals
+    #residuals = numeric(m)
+    #residuals[1:p] = 0
+    #res = yest-x%*%beta1
+    #for (i in (p+1):m) residuals[i] = res[i] - sum(phi1*res[(i-1):(i-p)])
+    #predict = yest - residuals
     ##
     #if (graphs.residuals) {
     #  par(mfrow=c(3,2))
@@ -315,44 +310,41 @@ SAEM = function(cc, LI, LS, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol,
       h = nrow(x_pred)
       sig_pred = MatArp(phi1,m+h) *sigmae
       pred = x_pred%*%beta1 + sig_pred[m+1:h,1:m]%*%solve(sig_pred[1:m,1:m])%*%(yest-x%*%beta1)
-      if (show_yy) {
+      #if (show_yy) {
         if (show_ep) obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
                         AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count, ep=ep_par, vartheta=vartheta,
-                        pred=pred, yest=yest, yyest=SAEM_yy[count+1,,], timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
+                        pred=pred, yest=yest, yyest=SAEM_yy[count+1,,], timediff=dift, criteria=criterio2)
         else obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
                              AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count,
-                             pred=pred, yest=yest, yyest=SAEM_yy[count+1,,], timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
-      }
-      else {
-        if (show_ep) obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
-                                     AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count, ep = ep_par, vartheta=vartheta,
-                                     pred=pred, yest=yest, timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
-        else obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
-                             AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count,
-                             pred=pred, yest=yest, timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
-      }
-    }
-    else {
-      if (show_yy) {
-        if (show_ep) obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
+                             pred=pred, yest=yest, yyest=SAEM_yy[count+1,,], timediff=dift, criteria=criterio2)
+      #}
+      #else {
+        #if (show_ep) obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
+        #                             AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count, ep = ep_par, vartheta=vartheta,
+        #                             pred=pred, yest=yest, timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
+        #else obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
+        #                     AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count,
+        #                     pred=pred, yest=yest, timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
+      #}
+    } else {
+      #if (show_yy) {
+       if (show_ep) obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
                         AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count, ep=ep_par, vartheta=vartheta,
-                        yest=yest, yyest=SAEM_yy[count+1,,], timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
+                        yest=yest, yyest=SAEM_yy[count+1,,], timediff=dift, criteria=criterio2)
         else obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
                              AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count,
-                             yest=yest, yyest=SAEM_yy[count+1,,], timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
-      }
-      else {
-        if (show_ep) obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
-                                     AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count, ep=ep_par, vartheta=vartheta,
-                                     yest=yest, timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
-        else obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
-                             AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count,
-                             yest=yest, timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
-      }
+                             yest=yest, yyest=SAEM_yy[count+1,,], timediff=dift, criteria=criterio2)
+      #}
+      #else {
+      #  if (show_ep) obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
+      #                               AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count, ep=ep_par, vartheta=vartheta,
+      #                               yest=yest, timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
+      #  else obj.out = list(beta1=beta1, sigmae=sigmae, phi1=phi1, pi1=pi1, Theta=Theta, loglik=loglik,
+      #                       AIC=AICc, BIC=BICc, AICcorr=AICcorr, theta=teta1, iter=count,
+      #                       yest=yest, timediff=dift, criteria=criterio2, residuals=residuals, predict=predict)
+      #}
     }
-
-    class(obj.out) = "SAEM_Cens"
-
+   # class(obj.out) = "SAEM_Cens"
   }
   return(obj.out)
 }

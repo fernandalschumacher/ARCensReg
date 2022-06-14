@@ -96,7 +96,7 @@ ARtCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001
     colnames(tab) = lab
     rownames(tab) = c("")
   }
-  obj.out = list(res=out$res, yest=out$SAEMy, uest=out$SAEMu, x=x, iter=out$iter)
+  obj.out = out$res
   obj.out$call = match.call()
   obj.out$tab = tab
   if (sum(cc) == 0){ cens = "no-censoring" 
@@ -111,7 +111,7 @@ ARtCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001
   obj.out$cens = cens
   obj.out$nmiss = length(miss)
   obj.out$ncens = sum(cc) - obj.out$nmiss
-  obj.out$converge = (out$iter < MaxIter)
+  obj.out$converge = (out$res$iter < MaxIter)
   obj.out$MaxIter = MaxIter
   obj.out$M = M
   obj.out$pc = pc
@@ -130,6 +130,7 @@ ARtCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001
   class(obj.out)  = 'ARtpCRM'
   invisible(obj.out)
 }
+
 
 #' @export
 print.ARtpCRM = function(x, ...){
@@ -155,19 +156,55 @@ print.ARtpCRM = function(x, ...){
   cat('\n')
   cat('Number of missing values =',x$nmiss)
   cat('\n')
-  if (x$ncens>0) {
-    cat("Convergence reached? =",x$converge)
-    cat('\n')
-    cat('Iterations =',x$iter,"/",x$MaxIter)
-    cat('\n')
-    cat('MC sample =',x$M)
-    cat('\n')
-    cat('Cut point =',x$pc)
-    cat('\n')
-  }
+  cat("Convergence reached? =",x$converge)
+  cat('\n')
+  cat('Iterations =',x$iter,"/",x$MaxIter)
+  cat('\n')
+  cat('MC sample =',x$M)
+  cat('\n')
+  cat('Cut point =',x$pc)
+  cat('\n')
   cat("Processing time =", x$time, units(x$time))
   cat('\n','\n')
 }
+
+
+#' @export
+summary.ARtpCRM = function(object, ...){
+  cat('\n')
+  cat("Call:\n")
+  print(object$call)
+  cat('\n')
+  cat('---------------------------------------------------\n')
+  cat('  Censored Linear Regression Model with AR Errors \n')
+  cat('---------------------------------------------------\n')
+  cat('\n')
+  cat('---------\n')
+  cat('Estimates:\n')
+  cat('---------\n')
+  cat('\n')
+  print(object$tab)
+  cat('\n')
+  cat('-------\n')
+  cat('Details\n')
+  cat('-------\n')
+  cat('\n')
+  cat('Type of censoring =',object$cens)
+  cat('\n')
+  cat('Number of missing values =',object$nmiss)
+  cat('\n')
+  cat("Convergence reached? =",object$converge)
+  cat('\n')
+  cat('Iterations =',object$iter,"/",object$MaxIter)
+  cat('\n')
+  cat('MC sample =',object$M)
+  cat('\n')
+  cat('Cut point =',object$pc)
+  cat('\n')
+  cat("Processing time =", object$time, units(object$time))
+  cat('\n','\n')
+}
+
 
 #' @export
 plot.ARtpCRM = function(x, ...) {
@@ -187,3 +224,22 @@ plot.ARtpCRM = function(x, ...) {
 }
 
 
+#' @export
+residuals.ARtpCRM = function(object, ...) {
+  
+  x = object$x
+  p = length(object$phi)
+  m = nrow(x)
+  residuals = numeric(m)
+  residuals[1:p] = 0
+  
+  res = object$yest - x%*%object$beta
+  for (i in (p+1):m) residuals[i] = res[i] - sum(object$phi*res[(i-1):(i-p)])
+  #
+  quant = residuals/sqrt(object$sigma2)
+  quant = qnorm(pt(quant, object$nu))
+  
+  resid = list(residuals=residuals, quantile.resid=quant)
+  class(resid) = "residARpCRM"
+  return(resid)
+}

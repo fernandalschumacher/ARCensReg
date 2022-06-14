@@ -32,8 +32,7 @@ This data frame contains the following columns:
 
 \url{https://cran.r-project.org/web/packages/carx/carx.pdf}
 }
-\examples{
-\donttest{
+\examples{\donttest{
 library(ggplot2)
 
 data(phosphorus)
@@ -71,8 +70,8 @@ ggplot(data.plot) + geom_line(aes(x=1:n, y=ynorm), color=4) +
   geom_line(aes(x=1:n, y=y)) + labs(x="Time", y="lP") + theme_bw()
 
 # Imputed values
-data.plot[cc==1,]}
-}
+data.plot[cc==1,]
+}}
 \seealso{
 \code{\link[ARCensReg]{ARCensReg}}, \code{\link[ARCensReg]{ARtCensReg}}
 }

@@ -50,6 +50,7 @@ Imports:
     ggplot2,
     gridExtra,
     matrixcalc,
+    methods,
     msm,
     mvtnorm,
     numDeriv,
