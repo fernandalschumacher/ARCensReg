@@ -24,14 +24,13 @@ Approximation Expectation-Maximization (SAEM) algorithm (Delyon,
 Lavielle, and Moulines 1999), while the standard errors of the
 parameters are approximated by the Louis method (Louis 1982). This
 package also predicts future observations and supports missing values on
-the dependent variable. See, for instance, (F. L. Schumacher, Lachos,
-and Dey 2017) and (Valeriano et al. 2021).
+the dependent variable. See, for instance, (Schumacher, Lachos, and Dey
+2017) and (Valeriano et al. 2021).
 
 For the normal model, influence diagnostic could be performed by a local
 influence approach (Cook 1986) with three possible perturbation schemes:
 response perturbation, scale matrix perturbation, or explanatory
-variable perturbation. For more details see (Fernanda L. Schumacher et
-al. 2018).
+variable perturbation. For more details see (Schumacher et al. 2018).
 
 The `ARCensReg` package provides the following functions:
 
@@ -88,7 +87,7 @@ ggplot(dat$data, aes(x=1:n, y=y)) + geom_line() + labs(x="Time") + theme_bw() +
   geom_line(aes(x=1:n, y=ucl), color="red", linetype="dashed")
 ```
 
-<img src="man/figures/README-example1-1.png" width="100%" />
+<img src="man/figures/README-example1-1.png" width="65%" style="display: block; margin: auto;" />
 
 Supposing the AR order is unknown, we fit a censored linear regression
 model with Gaussian AR errors of order *p* = 1 and *p* = 2, and the
@@ -138,7 +137,7 @@ summary(fit2)
 #> Iterations: 168 / 400 
 #> MC sample: 10 
 #> Cut point: 0.15 
-#> Processing time: 58.53818 secs
+#> Processing time: 1.096809 mins
 ```
 
 Moreover, for censored data, the convergence plot of the parameter
@@ -148,7 +147,7 @@ estimates can be displayed through function `plot`.
 plot(fit2)
 ```
 
-<img src="man/figures/README-example1.4-1.png" width="100%" />
+<img src="man/figures/README-example1.4-1.png" width="65%" style="display: block; margin: auto;" />
 
 Now, we perturb the observation 81 by making it equal to 6 and then fit
 a censored linear regression model with Gaussian AR errors of order
@@ -179,7 +178,7 @@ M0y = InfDiag(fit3, k=3.5, perturbation="y")
 plot(M0y)
 ```
 
-<img src="man/figures/README-example1.6-1.png" width="100%" />
+<img src="man/figures/README-example1.6-1.png" width="65%" style="display: block; margin: auto;" />
 
 **Example 2**. A dataset of size *n* = 200 is simulated from the
 censored regression model with Student-t innovations and right
@@ -237,7 +236,7 @@ res = residuals(fit2)
 plot(res)
 ```
 
-<img src="man/figures/README-example2.2-1.png" width="100%" />
+<img src="man/figures/README-example2.2-1.png" width="65%" style="display: block; margin: auto;" />
 
 For comparison, we fit the same dataset considering the normal
 distribution (i.e., disregarding the heavy tails) and compute the
@@ -251,7 +250,7 @@ fit3 = ARCensReg(dat2$data$cc, dat2$data$lcl, dat2$data$ucl, dat2$data$y, x,
 plot(residuals(fit3))
 ```
 
-<img src="man/figures/README-example2.3-1.png" width="100%" />
+<img src="man/figures/README-example2.3-1.png" width="65%" style="display: block; margin: auto;" />
 
 ### References
 
@@ -267,16 +266,16 @@ Statistical Society: Series B (Methodological)* 48 (2): 133–55.
 <div id="ref-delyon1999convergence" class="csl-entry">
 
 Delyon, B., M. Lavielle, and E. Moulines. 1999. “Convergence of a
-Stochastic Approximation Version of the EM Algorithm.” *Annals of
-Statistics*, 94–128.
+Stochastic Approximation Version of the EM Algorithm.” *The Annals of
+Statistics* 27 (1): 94–128.
 
 </div>
 
 <div id="ref-louis1982finding" class="csl-entry">
 
-Louis, Thomas A. 1982. “Finding the Observed Information Matrix When
-Using the EM Algorithm.” *Journal of the Royal Statistical Society:
-Series B (Methodological)* 44 (2): 226–33.
+Louis, T. A. 1982. “Finding the Observed Information Matrix When Using
+the EM Algorithm.” *Journal of the Royal Statistical Society: Series B
+(Methodological)* 44 (2): 226–33.
 
 </div>
 
@@ -290,10 +289,10 @@ Perspective.” *Canadian Journal of Statistics* 45 (4): 375–92.
 
 <div id="ref-schumacher2018influence" class="csl-entry">
 
-Schumacher, Fernanda L, Victor H Lachos, Filidor E Vilca-Labra, and Luis
-M Castro. 2018. “Influence Diagnostics for Censored Regression Models
-with Autoregressive Errors.” *Australian & New Zealand Journal of
-Statistics* 60 (2): 209–29.
+Schumacher, F. L., V. H. Lachos, F. E. Vilca-Labra, and L. M. Castro.
+2018. “Influence Diagnostics for Censored Regression Models with
+Autoregressive Errors.” *Australian & New Zealand Journal of Statistics*
+60 (2): 209–29.
 
 </div>
 

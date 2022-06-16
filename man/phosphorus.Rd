@@ -28,9 +28,9 @@ This data frame contains the following columns:
 }
 }
 \source{
-\url{http://waterdata.usgs.gov/ia/nwis/monthly/}
+\url{https://waterdata.usgs.gov/ia/nwis/monthly/}
 
-\url{https://cran.r-project.org/web/packages/carx/carx.pdf}
+\url{https://CRAN.R-project.org/package=carx}
 }
 \examples{\donttest{
 library(ggplot2)

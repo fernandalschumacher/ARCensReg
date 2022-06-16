@@ -3,7 +3,7 @@ Type: Package
 Title: Fitting Univariate Censored Linear Regression Model with Autoregressive Errors
 Version: 3.0.0
 Authors@R: 
-  c(person(given = "Fernanda.",
+  c(person(given = "Fernanda",
            family = "L. Schumacher",
            role = c("aut", "cre"),
            email = "fernandalschumacher@gmail.com",
