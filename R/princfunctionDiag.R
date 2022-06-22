@@ -1,6 +1,6 @@
 #source('princfunction.R')
 
-InfDiagys = function(theta, yest, yyest, x, k=3, plots=TRUE, indpar=rep(1,length(theta))){
+InfDiagys = function(theta, yest, yyest, x, k=3, indpar=rep(1,length(theta))){
   n = length(yest)
   hes = Qt(theta,yest,yyest,x)
   #if (plots) par(mfrow=c(1,1),mar=c(4, 4, 3, 2) + 0.1)
@@ -22,21 +22,16 @@ InfDiagys = function(theta, yest, yyest, x, k=3, plots=TRUE, indpar=rep(1,length
   autovec = auto$vectors[,abs(auto$values)>.0001]
   Mautovalp = matrix(autovalp,n,length(autovalp),byrow=T)
   M0y = apply(Mautovalp*autovec^2,1,sum)
-  bm = mean(M0y)+k*sd(M0y)
-  if (plots) {
-    M0y2 = data.frame(M0y); rownames(M0y2) = 1:n
-    ggplot(M0y2, aes(x=1:n, y=M0y)) + geom_point(shape=ifelse(M0y>bm,16,21), size=1.5) +
-      geom_hline(yintercept=bm, linetype="dashed") +
-      geom_text(aes(label=ifelse(M0y>bm, rownames(M0y2), '')), vjust=1.5) +
-      labs(x="Index", y="Response perturbation") + theme_bw()
-    #plot(M0y,pch=ifelse(M0y>bm,16,1),ylab='Response perturbation')
-    #abline(h=bm,lty='dashed')
-    #if (length(which(M0y>bm))>0) text(which(M0y>bm)+length(M0y)/10,M0y[M0y>bm],labels=which(M0y>bm))
-  }
+#  bm = mean(M0y)+k*sd(M0y)
+#  if (plots) {
+#    plot(M0y,pch=ifelse(M0y>bm,16,1),ylab='Response perturbation')
+#    abline(h=bm,lty='dashed')
+#    if (length(which(M0y>bm))>0) text(which(M0y>bm)+length(M0y)/10,M0y[M0y>bm],labels=which(M0y>bm))
+#  }
   return(M0y)
 }
 
-InfDiagSigs = function(theta, yest, yyest, x, k=3, plots=T, indpar=rep(1,length(theta))){
+InfDiagSigs = function(theta, yest, yyest, x, k=3, indpar=rep(1,length(theta))){
   n = length(yest)
   hes = Qt(theta,yest,yyest,x)
   ############################### Sigmatil=Sigma D(w)
@@ -57,22 +52,17 @@ InfDiagSigs = function(theta, yest, yyest, x, k=3, plots=T, indpar=rep(1,length(
   autovec = auto$vectors[,abs(auto$values)>.0001]
   Mautovalp = matrix(autovalp,n,length(autovalp),byrow=T)
   M0sig = apply(Mautovalp*autovec^2,1,sum)
-  bm = mean(M0sig)+k*sd(M0sig)
-  if (plots) {
-    M0y2 = data.frame(M0sig); rownames(M0y2) = 1:n
-    ggplot(M0y2, aes(x=1:n, y=M0sig)) + geom_point(shape=ifelse(M0sig>bm,16,21), size=1.5) +
-      geom_hline(yintercept=bm, linetype="dashed") +
-      geom_text(aes(label=ifelse(M0sig>bm, rownames(M0y2), '')), vjust=1.5) +
-      labs(x="Index", y="Scale matrix perturbation") + theme_bw()
-    #plot(M0sig,pch=ifelse(M0sig>bm,16,1),ylab='Scale matrix perturbation')#,type='h')
-    #abline(h=bm,lty='dashed')
-    #if (length(which(M0sig>bm))>0) text(which(M0sig>bm)+length(M0sig)/10,M0sig[M0sig>bm],labels=which(M0sig>bm))
-  }
+#  bm = mean(M0sig)+k*sd(M0sig)
+#  if (plots) {
+#    plot(M0sig,pch=ifelse(M0sig>bm,16,1),ylab='Scale matrix perturbation')#,type='h')
+#    abline(h=bm,lty='dashed')
+#    if (length(which(M0sig>bm))>0) text(which(M0sig>bm)+length(M0sig)/10,M0sig[M0sig>bm],labels=which(M0sig>bm))
+#  }
   ###
   return(M0sig)
 }
 
-InfDiagxps = function(theta,yest,yyest,x,k=3,indp=rep(1,ncol(x)),plots=T,indpar=rep(1,length(theta))){
+InfDiagxps = function(theta,yest,yyest,x,k=3,indp=rep(1,ncol(x)),indpar=rep(1,length(theta))){
   n = length(yest)
   hes = Qt(theta,yest,yyest,x)
   ###############################
@@ -92,16 +82,11 @@ InfDiagxps = function(theta,yest,yyest,x,k=3,indp=rep(1,ncol(x)),plots=T,indpar=
   autovec = auto$vectors[,abs(auto$values)>.0001]
   Mautovalp = matrix(autovalp,n,length(autovalp),byrow=T)
   M0xp = apply(Mautovalp*autovec^2,1,sum)
-  bm = mean(M0xp)+k*sd(M0xp)
-  if (plots) {
-    M0y2 = data.frame(M0xp); rownames(M0y2) = 1:n
-    ggplot(M0y2, aes(x=1:n, y=M0xp)) + geom_point(shape=ifelse(M0xp>bm,16,21), size=1.5) +
-      geom_hline(yintercept=bm, linetype="dashed") +
-      geom_text(aes(label=ifelse(M0xp>bm, rownames(M0y2), '')), vjust=1.5) +
-      labs(x="Index", y="x perturbation") + theme_bw()
-    #plot(M0xp,pch=ifelse(M0xp>bm,16,1),ylab='x perturbation')
-    #abline(h=bm,lty='dashed')
-    #if (length(which(M0xp>bm))>0) text(which(M0xp>bm)+length(M0xp)/20,M0xp[M0xp>bm],labels=which(M0xp>bm))
-  }
+#  bm = mean(M0xp)+k*sd(M0xp)
+#  if (plots) {
+#    plot(M0xp,pch=ifelse(M0xp>bm,16,1),ylab='x perturbation')
+#    abline(h=bm,lty='dashed')
+#    if (length(which(M0xp>bm))>0) text(which(M0xp>bm)+length(M0xp)/20,M0xp[M0xp>bm],labels=which(M0xp>bm))
+#  }
   return(M0xp)
 }

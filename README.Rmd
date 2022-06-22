@@ -1,0 +1,162 @@
+---
+output: github_document
+bibliography: inst/REFERENCES.bib
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "65%",
+  fig.align = "center"
+)
+```
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+## The `ARCensReg R` package
+
+The `ARCensReg` package fits a univariate censored linear regression model with autoregressive (AR) errors. The discrete-time representation of this model for the observed response at time $t$ is given by
+
+$Y_t = x_t^\top \beta + \xi_t,$
+
+$\xi_t = \phi_1 \xi_{t-1} + \phi_2 \xi_{t-2} + ... + \phi_p \xi_{t-p} + \eta_t, \quad t=1, ..., p, p+1, ..., n,$
+
+where $Y_t$ is the response variable, $\beta$ is a vector of regression parameters of dimension $l$, $x_t$ is a vector of non-stochastic regressor variables, and $\xi_t$ is the AR error with $\eta_t$ representing the innovations and $\phi$ denoting the vector of AR coefficients. For the innovations $\eta_t$, we consider the normal or the Student-t distribution. The maximum likelihood estimates are obtained through the Stochastic Approximation Expectation-Maximization (SAEM) algorithm [@delyon1999convergence], while the standard errors of the parameters are approximated by the Louis method [@louis1982finding]. This package also predicts future observations and supports missing values on the dependent variable. See, for instance, [@schumacher2017censored] and [@valeriano2021censored]. 
+
+For the normal model, influence diagnostic could be performed by a local influence approach [@cook1986assessment] with three possible perturbation schemes: response perturbation, scale matrix perturbation, or explanatory variable perturbation. For more details see [@schumacher2018influence].
+
+The `ARCensReg` package provides the following functions:
+  
+* `ARCensReg`: fits a univariate censored linear regression model with autoregressive errors under the normal distribution.
+* `ARtCensReg`: fits a univariate censored linear regression model with autoregressive errors considering Student-t innovations.
+* `InfDiag`: performs influence diagnostic by a local influence approach with three possible perturbation schemes.
+* `rARCens`: simulates a censored response variable with autoregressive errors of order $p$.
+* `residuals`: computes conditional and quantile residuals.
+
+`print`, `summary`, and `plot` functions also work for objects given as an output of functions `ARCensReg` and `ARtCensReg`. Function `plot` also has methods for outputs of functions `InfDiag` and `residuals`.
+
+Next, we will describe how to install the package and use all the previous methods in artificial examples.
+
+### Installation
+
+The released version of `ARCensReg` from [CRAN](https://CRAN.R-project.org) can be installed with:
+  
+  ``` r
+install.packages("ARCensReg")
+```
+
+And the development version from [GitHub](https://github.com/) with:
+  
+  ``` r
+# install.packages("devtools")
+devtools::install_github("fernandalschumacher/ARCensReg")
+```
+
+### Examples
+
+**Example 1**. We simulated a dataset of length $n = 100$ from the autoregressive model of order $p = 2$ with normal innovations and left censoring.
+
+```{r example1}
+library(ARCensReg)
+library(ggplot2)
+
+set.seed(12341)
+n = 100
+x = cbind(1, runif(n))
+dat = rARCens(n=n, beta=c(1,-1), phi=c(.48,-0.4), sig2=.5, x=x,
+              cens='left', pcens=.05, innov="norm")
+
+ggplot(dat$data, aes(x=1:n, y=y)) + geom_line() + labs(x="Time") + theme_bw() +
+  geom_line(aes(x=1:n, y=ucl), color="red", linetype="dashed")
+```
+
+Supposing the AR order is unknown, we fit a censored linear regression model with Gaussian AR errors of order $p = 1$ and $p = 2$, and the information criteria are compared.
+
+```{r example1.2}
+fit1 = ARCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, dat$data$y, x, 
+                 p=1, pc=0.15, show_se=FALSE, quiet=TRUE)
+fit1$critFin 
+
+fit2 = ARCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, dat$data$y, x, 
+                 p=2, pc=0.15, quiet=TRUE)
+fit2$critFin
+```
+
+Based on the information criteria AIC and BIC, the model with AR errors of order $p = 2$ is the best fit for this data. The parameter estimates and standard errors can be visualized through functions `summary` and `print`.
+
+```{r example1.3}
+summary(fit2)
+```
+
+Moreover, for censored data, the convergence plot of the parameter estimates can be displayed through function `plot`.
+
+```{r example1.4}
+plot(fit2)
+```
+
+Now, we perturb the observation $81$ by making it equal to 6 and then fit a censored linear regression model with Gaussian AR errors of order $p = 2$.
+
+```{r example1.5}
+y2 = dat$data$y
+y2[81] = 6
+fit3 = ARCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, y2, x, p=2,
+                 show_se=FALSE, quiet=TRUE)
+fit3$tab
+```
+
+It is worth noting that the parameter estimates were affected because of the perturbation. Thence, we can perform influence diagnostic to identify influential points which may cause unwanted effects on estimation and goodness of fit. In the following analysis, we only consider the response perturbation scheme, where we deduced that observations $80$ to $82$ may be influential.
+
+```{r example1.6}
+M0y = InfDiag(fit3, k=3.5, perturbation="y")
+plot(M0y)
+```
+
+**Example 2**. A dataset of size $n = 200$ is simulated from the censored regression model with Student-t innovations and right censoring. To fit this data, we can use the function `ARtCensReg`, but it is worth mentioning that this function only works for response vectors with the first $p$ values wholly  observed. 
+
+```{r example2}
+set.seed(783796)
+n = 200
+x = cbind(1, runif(n))
+dat2 = rARCens(n=n, beta=c(2,1), phi=c(.48,-.2), sig2=.5, x=x, cens='right',
+               pcens=.05, innov='t', nu=3)
+head(dat2$data)
+```
+
+For models with Student-t innovations, the degrees of freedom can be provided through argument `nufix` when it is known, or the algorithm will estimate it when it is not provided, i.e., `nufix=NULL`.
+
+```{r example2.1}
+# Fitting the model with nu known
+fit1 = ARtCensReg(dat2$data$cc, dat2$data$lcl, dat2$data$ucl, dat2$data$y, x,
+                  p=2, M=20, nufix=3, quiet=TRUE)
+fit1$tab
+
+# Fitting the model with nu unknown
+fit2 = ARtCensReg(dat2$data$cc, dat2$data$lcl, dat2$data$ucl, dat2$data$y, x,
+                  p=2, M=20, quiet=TRUE)
+fit2$tab
+```
+
+Note that the parameter estimates obtained from both models are close, and the estimate of $\nu$ was close to the true value ($\nu = 3$). 
+
+To check the statistical model's specification, we can use graphical methods based on the quantile residuals, which are computed through function `residuals` and plotted by function `plot`.
+
+```{r example2.2}
+res = residuals(fit2)
+plot(res)
+```
+
+For comparison, we fit the same dataset considering the normal distribution (i.e., disregarding the heavy tails) and compute the corresponding quantile residuals. The resulting plots are given below, where we can see clear signs
+of non-normality, such as large residuals and some points outside the confidence band in the Q-Q plots.
+
+```{r example2.3}
+fit3 = ARCensReg(dat2$data$cc, dat2$data$lcl, dat2$data$ucl, dat2$data$y, x,
+                 p=2, M=20, show_se=FALSE, quiet=TRUE)
+plot(residuals(fit3))
+```
+
+### References

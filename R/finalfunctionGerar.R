@@ -1,18 +1,18 @@
 
-rARCens = function(n, beta, pit, sig2=1, x=rep(1,n), cens='left', pcens=0.1, innov="norm", nu=NULL)
+rARCens = function(n, beta, phi, sig2=1, x=rep(1,n), cens='left', pcens=0.1, innov="norm", nu=NULL)
 {
   if ((!is.numeric(n)) | (length(n)!=1) | n<=0) stop("n must be a positive integer number")
   if (!is.numeric(x)) stop("x must be a numeric matrix")
   if (!is.matrix(x)) x = as.matrix(x)
   if (det(t(x)%*%x) == 0) stop("The columns of x must be linearly independent")
   if (!is.numeric(beta)) stop("beta must be a numeric vector")
-  if (!is.numeric(pit)) stop("pit must be a numeric vector")
+  if (!is.numeric(phi)) stop("phi must be a numeric vector")
   if (!is.numeric(sig2)) stop("sig2 must be a number")
   if (!is.numeric(pcens)) stop("pcens must be a number")
   
   ## Verify error at parameters specification
   #No data
-  if ((length(x) == 0) | (length(beta) == 0) | (length(pit) == 0)) stop("All parameters must be provided.")
+  if ((length(x) == 0) | (length(beta) == 0) | (length(phi) == 0)) stop("All parameters must be provided.")
 
   #Validating if exists NA's
   if (sum(is.na(x)) > 0) stop("There are some NA values in x")
@@ -27,8 +27,8 @@ rARCens = function(n, beta, pit, sig2=1, x=rep(1,n), cens='left', pcens=0.1, inn
   if (!is.numeric(pcens)) stop("pcens must be a real number in [0,1]")
   if (pcens > 1 | pcens < 0) stop("pcens must be a real number in [0,1]")
   if (cens!='left' & cens!='right') stop('cens must be left or right')
-  if (any(pit>=1) | any(pit<=-1)) stop('pit must be a vector with elements in (-1,1)')
-  
+  pit = tphitopi(phi)
+  if (any(pit>=1) | any(pit<=-1)) stop('AR(p) non stationary, choose other phi')
   if (innov!='norm' & innov!='t') stop('innov must be norm or t')
   if (innov == 't'){
     if (is.null(nu)) stop('nu must be provided for Student-t innovations')
@@ -39,7 +39,6 @@ rARCens = function(n, beta, pit, sig2=1, x=rep(1,n), cens='left', pcens=0.1, inn
 
   #Running the algorithm
   out = list()
-  phi = estphit(pit)
   out$data = gerarARCens(n=n, beta=beta, phi=phi, sig2=sig2, x=x, cens=cens, pcens=pcens,
                          innov=innov, nu=nu)
   if (innov == "norm") out$param = c(beta, sig2, phi)
@@ -50,9 +49,7 @@ rARCens = function(n, beta, pit, sig2=1, x=rep(1,n), cens='left', pcens=0.1, inn
 }
 
 
-################################
-# Simulate a dataset #
-################################
+## Simulate a dataset ##
 
 gerarARCens = function(n, beta, phi, sig2, x, cens, pcens, innov, nu) {
   p = length(phi)

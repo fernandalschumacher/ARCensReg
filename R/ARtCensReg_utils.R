@@ -287,11 +287,16 @@ SAEM_temporalT = function(cens, LI, LS, y, x, p, x_pred, tol, M, perc, MaxIter, 
         if(k>p){t(phi)%*%c(y_pred[(k-1):(k-p)] - media.pre[(k-1):(k-p)])}else{0}
     }
     if (show_ep) resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta, SE=se.app,
-                                    pred=y_pred, criteria=criterio2)
-    else resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta, pred=y_pred, criteria=criterio2)
+                                    pred=y_pred)
+    else resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta, pred=y_pred)
   } else {
-    if (show_ep) resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta, SE=se.app, criteria=criterio2)
-    else resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta, criteria=criterio2)
+    if (show_ep) resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta, SE=se.app)
+    else resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta)
   }
-  return (list(res=resultados, SAEMy=SAEM.Y, SAEMu=SAEM.U, iter=count, time=timediffe, Theta=Theta))
+  resultados$yest = SAEM.Y
+  resultados$uest = SAEM.U
+  resultados$x = x
+  resultados$iter = count
+  resultados$criteria = criterio2
+  return (list(res=resultados, time=timediffe, Theta=Theta))
 }

@@ -17,17 +17,18 @@ ARtCensReg(cc, lcl = NULL, ucl = NULL, y, x, p = 1, x_pred = NULL,
 }
 \arguments{
 \item{cc}{Vector of censoring indicators of length \eqn{n}, where \eqn{n} is the 
-total of observations. For each observation: 0 if non-censored, 1 if censored/missing.}
+total observations. For each observation: 0 if non-censored, 1 if censored/missing.}
   
-\item{lcl, ucl}{Vectors of length \eqn{n}, representing the lower and upper bounds of the interval which contains the true value of the censored observation. Default =\code{NULL}, indicating no-censored data.}
+\item{lcl, ucl}{Vectors of length \eqn{n} that represent the lower and upper bounds of the interval, which contains the true value of the censored observation. Default =\code{NULL}, indicating no-censored data. For left censoring, \code{lcl=-Inf} and \code{ucl=c}. For right censoring, \code{lcl=c} and \code{ucl=Inf}. For interval censoring, \code{lcl} and \code{ucl} must be finite, while missing data could be defined by setting \code{lcl=-Inf} and \code{ucl=Inf}.
+}
   
 \item{y}{Vector of responses of length \eqn{n}.}
   
 \item{x}{Matrix of covariates of dimension \eqn{n}x\eqn{l}, where \eqn{l} is the number 
 of fixed effects including the intercept, if considered (in models which include an 
-intercept \code{x} should contain a column of ones).}
+intercept, \code{x} should contain a column of ones).}
   
-\item{p}{Order of the autoregressive process. Must be a positive integer value.}
+\item{p}{Order of the autoregressive process. It must be a positive integer value.}
   
 \item{x_pred}{Matrix of covariates for responses to be predicted. If x_pred = \code{NULL} 
 no responses are predicted.}
@@ -41,11 +42,11 @@ Default=10.}
   
 \item{MaxIter}{The maximum number of iterations of the SAEM algorithm. Default=400.}
   
-\item{pc}{Percentage of initial iterations of the SAEM algorithm with no-memory. It is recommended that 
+\item{pc}{Percentage of initial iterations of the SAEM algorithm with no memory. It is recommended that 
 \code{50<MaxIter*pc<100}. Default=0.18.}
 
-\item{nufix}{If the degrees of freedom (\eqn{\nu}) are unknown \code{nufix} should be equal \code{NULL}, otherwise 
-it must be a number greater than 2.}
+\item{nufix}{If the degrees of freedom (\eqn{\nu}) are unknown, \code{nufix} 
+should be equal to \code{NULL}; otherwise, it must be a number greater than 2.}
   
 \item{show_se}{\code{TRUE} or \code{FALSE}. Indicates if the standard errors should be 
 estimated. Default=\code{TRUE}.}
@@ -63,13 +64,16 @@ The linear regression model with autocorrelated errors, defined as a discrete-ti
 where \eqn{Y_t} is the response variable (we assume that \eqn{Y_t} is not fully observed for all \eqn{t}), \eqn{\beta = (\beta_1,..., \beta_l)^T} is a vector of regression parameters of dimension \eqn{l}, \eqn{x_t = (x_{t1},..., x_{tl})^T} is a vector of non-stochastic regressor variables values, and \eqn{\xi_t} is the AR error with \eqn{\eta_t} being a shock of disturbance following the Student-t distribution, \eqn{\phi = (\phi_1,..., \phi_p)^T} being the vector of AR coefficients, and \eqn{n} denoting the sample size. 
 
 The initial values are obtained by ignoring censoring and applying maximum likelihood 
-estimation with the censored data replaced by their censoring limits. To fit a 
-regression model with autoregressive errors for non-censored data, just set
-\code{cc} as a vector of zeros.
+estimation with the censored data replaced by their censoring limits. Moreover, 
+just set \code{cc} as a vector of zeros to fit a 
+regression model with autoregressive errors for non-censored data.
 }
 \section{Warning }{This algorithm assumes that the first \eqn{p} values in the response vector are completely observed.
 }
 \value{
+An object of class "ARtpCRM" representing the AR(p) censored regression Student-t fit. Generic functions such as print and summary have methods to show the results of the fit. The function plot provides convergence graphics for the parameter estimates.
+
+Specifically, the following components are returned:
 \item{beta}{Estimate of the regression parameters.}
 \item{sigma2}{Estimated scale parameter of the innovation.}
 \item{phi}{Estimate of the autoregressive parameters.}
@@ -77,11 +81,11 @@ regression model with autoregressive errors for non-censored data, just set
 \item{theta}{Vector of parameters estimate (\eqn{\beta, \sigma^2, \phi, \nu}).}
 \item{SE}{Vector of the standard errors of (\eqn{\beta, \sigma^2, \phi, \nu}).}
 \item{pred}{Predicted values (if x_pred is not \code{NULL}).}
-\item{criteria}{Attained criteria value.}
 \item{yest}{Augmented response variable based on the fitted model.}
 \item{uest}{Final estimated weight variables.}
 \item{x}{Matrix of covariates of dimension \eqn{n}x\eqn{l}.}
 \item{iter}{Number of iterations until convergence.}
+\item{criteria}{Attained criteria value.}
 \item{call}{The \code{ARtCensReg} call that produced the object.}
 \item{tab}{Table of estimates.}
 \item{cens}{"left", "right", or "interval" for left, right, or interval censoring, respectively.}
@@ -90,32 +94,32 @@ regression model with autoregressive errors for non-censored data, just set
 \item{converge}{Logical indicating convergence of the estimation algorithm.}
 \item{MaxIter}{The maximum number of iterations used for the SAEM algorithm.}
 \item{M}{Size of the Monte Carlo sample generated in each step of the SAEM algorithm.}
-\item{pc}{Percentage of initial iterations of the SAEM algorithm with no-memory.}
+\item{pc}{Percentage of initial iterations of the SAEM algorithm with no memory.}
 \item{time}{Time elapsed in processing.}
-\item{plot}{A list containing congervence information.}
+\item{plot}{A list containing convergence information.}
 }
 \author{
 Fernanda L. Schumacher, Katherine L. Valeriano, Victor H. Lachos, Christian E. Galarza, and Larissa A. Matos
 }
 \examples{
-## Simple example (p = l = 1)
+## Example 1: (p = l = 1)
 # Generating a sample
 set.seed(1234)
 n = 80
 x = rep(1, n)
-dat = rARCens(n=n, beta=2, pit=.6, sig2=.3, x=x, cens='right', pcens=.05, 
+dat = rARCens(n=n, beta=2, phi=.6, sig2=.3, x=x, cens='right', pcens=.05, 
               innov='t', nu=4)
 
 # Fitting the model (quick convergence)
 fit0 = ARtCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, dat$data$y, x,
                  tol=0.001, M=5, pc=.12)
 \donttest{
-## Another example (p = l = 2)
+## Example 2: (p = l = 2)
 # Generating a sample
 set.seed(783796)
 n = 200
 x = cbind(1, runif(n))
-dat = rARCens(n=n, beta=c(2,1), pit=c(.4,-.2), sig2=.5, x=x, cens='left',
+dat = rARCens(n=n, beta=c(2,1), phi=c(.48,-.2), sig2=.5, x=x, cens='left',
               pcens=.05, innov='t', nu=5)
   
 # Fitting the model with nu known

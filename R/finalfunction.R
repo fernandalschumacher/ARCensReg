@@ -50,8 +50,6 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
     if (!is.numeric(x_pred)) stop("x_pred must be a numeric matrix")
   }
 
-  #if (sum(miss %in% 1:m)<length(miss) ) stop("miss must indicate the index of the missing data on y")
-
   #Validating supports
   if (length(p) != 1) stop("p must be a positive integer value")
   if (!is.numeric(p)) stop("p must be a positive integer value")
@@ -78,7 +76,7 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
   print(call)
   cat('\n')
   }
-  out = suppressWarnings(SAEM(cc, lcl, ucl, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol, show_se, TRUE, quiet))
+  out = suppressWarnings(SAEM(cc, lcl, ucl, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol, show_se, quiet))
   l = ncol(x)
   lab = numeric(p +l +1)
   if (sum(abs(x[,1])) == nrow(x)){ for (i in 1:ncol(x)) lab[i] = paste('beta',i-1,sep='') 
@@ -98,14 +96,16 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
   critFin = round(t(as.matrix(critFin)),digits=3)
   dimnames(critFin) = list(c("Value"),c("Loglik", "AIC", "BIC","AICcorr"))
 
-
-  if (!is.null(x_pred)) res = list(beta=out$beta, sigma2=out$sigmae, phi=out$phi1, pi1=out$pi1, theta=out$theta, SE=out$ep,
+  if (!is.null(x_pred)) obj.out = list(beta=out$beta, sigma2=out$sigmae, phi=out$phi1, pi1=out$pi1, theta=out$theta, SE=out$ep,
                                    loglik=out$loglik, AIC=out$AIC, BIC=out$BIC, AICcorr=out$AICcorr, 
-                                   pred=out$pred, criteria=out$criteria)
-  else res = list(beta=out$beta, sigma=out$sigmae, phi=out$phi1, pi1=out$pi1, theta=out$theta, SE=out$ep,
-            loglik=out$loglik, AIC=out$AIC, BIC=out$BIC, AICcorr=out$AICcorr, criteria=out$criteria)
-  if (sum(cc)==0){ obj.out = list(res = res, y=y, x=x)
-  } else { obj.out = list(res=res, yest=out$yest, yyest=out$yyest, x=x, iter = out$iter) }
+                                   pred=out$pred)
+  else obj.out = list(beta=out$beta, sigma2=out$sigmae, phi=out$phi1, pi1=out$pi1, theta=out$theta, SE=out$ep,
+                  loglik=out$loglik, AIC=out$AIC, BIC=out$BIC, AICcorr=out$AICcorr)
+  if (sum(cc)==0){
+    obj.out$yest=y; obj.out$yyest=y%*%t(y); obj.out$x=x; obj.out$criteria=out$criteria
+  } else {
+    obj.out$yest=out$yest; obj.out$yyest=out$yyest; obj.out$x=x; obj.out$iter=out$iter; obj.out$criteria=out$criteria
+  }
   obj.out$call = match.call()
   obj.out$tab = tab
   obj.out$critFin = critFin
@@ -120,11 +120,13 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
   }
   obj.out$cens = cens
   obj.out$nmiss = ifelse(is.null(miss),0,length(miss))
-  obj.out$ncens = sum(cc) - obj.out$nmiss
-  obj.out$converge = (out$iter < MaxIter)
-  obj.out$MaxIter = MaxIter
-  obj.out$M = M
-  obj.out$pc = pc
+  obj.out$ncens = sum(cc)
+  if (sum(cc)>0){
+    obj.out$converge = (out$iter < MaxIter)
+    obj.out$MaxIter = MaxIter
+    obj.out$M = M
+    obj.out$pc = pc
+  }
   obj.out$time = out$timediff
   #plot
   obj.out$plot$cpl = pc*MaxIter
@@ -136,53 +138,64 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
   for(i in 1:p){obj.out$plot$labels[[i+l+1]] = bquote(phi[.(i)])}
   obj.out$plot$Theta = out$Theta
   #class
-  class(obj.out)  = 'ARpCRM' #ifelse(sum(cc)==0,'ARp-LRM','ARp-CRM')
+  class(obj.out)  = 'ARpCRM'
   invisible(obj.out)
 }
 
+
 #' @export
 print.ARpCRM = function(x, ...){
-  cat('\n')
-  cat("Call:\n")
-  print(x$call)
-  cat('\n')
   cat('---------------------------------------------------\n')
   cat('  Censored Linear Regression Model with AR Errors \n')
   cat('---------------------------------------------------\n')
+  cat("Call:\n")
+  print(x$call)
   cat('\n')
-  cat('---------\n')
-  cat('Estimates\n')
-  cat('---------\n')
-  cat('\n')
+  cat('Estimated parameters:\n')
   print(x$tab)
   cat('\n')
-  cat('------------------------\n')
-  cat('Model selection criteria\n')
-  cat('------------------------\n')
-  cat('\n')
+  cat('Model selection criteria:\n')
   print(x$critFin)
   cat('\n')
-  cat('-------\n')
-  cat('Details\n')
-  cat('-------\n')
-  cat('\n')
-  cat('Type of censoring =',x$cens)
-  cat('\n')
-  cat('Number of missing values =',x$nmiss)
-  cat('\n')
-  if (x$ncens>0) {
-    cat("Convergence reached? =",x$converge)
-    cat('\n')
-    cat('Iterations =',x$iter,"/",x$MaxIter)
-    cat('\n')
-    cat('MC sample =',x$M)
-    cat('\n')
-    cat('Cut point =',x$pc)
-    cat('\n')
+  cat('Details:\n')
+  cat('Type of censoring:', x$cens, '\n')
+  if (x$ncens > 0) {
+    cat('Number of missing values:', x$nmiss, '\n')
+    cat("Convergence reached?:", x$converge, '\n')
+    cat('Iterations:', x$iter,"/",x$MaxIter, '\n')
+    cat('MC sample:', x$M, '\n')
+    cat('Cut point:', x$pc, '\n')
   }
-  cat("Processing time =", x$time, units(x$time))
-  cat('\n','\n')
+  cat("Processing time:", x$time, units(x$time), '\n')
 }
+
+
+#' @export
+summary.ARpCRM = function(object, ...){
+  cat('---------------------------------------------------\n')
+  cat('  Censored Linear Regression Model with AR Errors \n')
+  cat('---------------------------------------------------\n')
+  cat("Call:\n")
+  print(object$call)
+  cat('\n')
+  cat('Estimated parameters:\n')
+  print(object$tab)
+  cat('\n')
+  cat('Model selection criteria:\n')
+  print(object$critFin)
+  cat('\n')
+  cat('Details:\n')
+  cat('Type of censoring:', object$cens, '\n')
+  if (object$ncens>0) {
+    cat('Number of missing values:', object$nmiss, '\n')
+    cat("Convergence reached?:", object$converge, '\n')
+    cat('Iterations:', object$iter,"/",object$MaxIter, '\n')
+    cat('MC sample:', object$M, '\n')
+    cat('Cut point:', object$pc, '\n')
+  }
+  cat("Processing time:", object$time, units(object$time), '\n')
+}
+
 
 #' @export
 plot.ARpCRM = function(x, ...) {
@@ -205,44 +218,44 @@ plot.ARpCRM = function(x, ...) {
 
 
 #' @export
-residuals.ARpCRM = function(object, plot=TRUE, ...) {
+residuals.ARpCRM = function(object, ...) {
   
-  x = matrix(object$x)
-  p = length(object$res$phi)
+  x = object$x
+  p = length(object$phi)
   m = nrow(x)
   residuals = numeric(m)
   residuals[1:p] = 0
   
-  if (object$cens == "no-censoring"){
-    res = object$y - x%*%object$res$beta
-    for (i in (p+1):m) residuals[i] = res[i] - sum(object$res$phi*res[(i-1):(i-p)])
-  } else {
-    res = object$yest - x%*%object$res$beta
-    for (i in (p+1):m) residuals[i] = res[i] - sum(object$res$phi*res[(i-1):(i-p)])
-  }
+  res = object$yest - x%*%object$beta
+  for (i in (p+1):m) residuals[i] = res[i] - sum(object$phi*res[(i-1):(i-p)])
   
-  if (plot){
-    sigma = sqrt(object$res$sigma)
-    resid = data.frame(resid = residuals/sigma)
-    #
-    f1 = ggplot(resid, aes(x=seq(1,m),y=resid)) + geom_point() + labs(x="Time", y="Quantile Residual") + 
-      geom_hline(yintercept=c(-2,0,2), color="red", linetype="twodash") + theme_bw()
-    #
-    bacfdf = with(acf(resid, plot=FALSE), data.frame(lag, acf))
-    f2 = ggplot(data=bacfdf, aes(x=lag, y=acf)) + geom_hline(aes(yintercept=0)) + theme_bw() +
-      geom_segment(aes(xend=lag, yend=0)) + labs(x="Lag", y="ACF") +
-      geom_hline(yintercept=c(qnorm(0.975)/sqrt(m),-qnorm(0.975)/sqrt(m)), colour="red", linetype="twodash")
-    #
-    f3 = ggplot(resid, aes(x=resid)) + geom_histogram(aes(y=..density..), fill="grey", color="black", bins=15) +
-      stat_function(fun=dnorm, col="red", linetype="twodash") + labs(x="Quantile Residual",y="Density") + theme_bw()
-    #
-    f4 = ggplot(resid, aes(sample=resid)) + stat_qq_band(distribution="norm", identity=TRUE) + 
-      stat_qq_line(distribution="norm", color="red", linetype="twodash", identity=TRUE) +
-      stat_qq_point(distribution="norm", identity=TRUE, size=1, alpha=0.5) + 
-      labs(x="Theoretical Quantiles", y="Sample Quantiles") + theme_bw()
-    #
-    grid.arrange(f1, f2, f3, f4, nrow=2)
-  }
-  invisible(residuals)
+  resid = list(residuals=residuals, quantile.resid=residuals/sqrt(object$sigma2))
+  class(resid) = "residARpCRM"
+  return(resid)
 }
 
+
+#' @export
+plot.residARpCRM = function(x, ...) {
+  
+  resid = data.frame(resid=x$quantile.resid)
+  m = nrow(resid)
+  #
+  f1 = ggplot(resid, aes(x=seq(1,m),y=resid)) + geom_point() + labs(x="Time", y="Quantile Residual") + 
+    geom_hline(yintercept=c(-2,0,2), color="red", linetype="twodash") + theme_bw()
+  #
+  bacfdf = with(acf(resid, plot=FALSE), data.frame(lag, acf))
+  f2 = ggplot(data=bacfdf, aes(x=lag, y=acf)) + geom_hline(aes(yintercept=0)) + theme_bw() +
+    geom_segment(aes(xend=lag, yend=0)) + labs(x="Lag", y="ACF") +
+    geom_hline(yintercept=c(qnorm(0.975)/sqrt(m),-qnorm(0.975)/sqrt(m)), colour="red", linetype="twodash")
+  #
+  f3 = ggplot(resid, aes(x=resid)) + geom_histogram(aes(y=..density..), fill="grey", color="black", bins=15) +
+    stat_function(fun=dnorm, col="red", linetype="twodash") + labs(x="Quantile Residual",y="Density") + theme_bw()
+  #
+  f4 = ggplot(resid, aes(sample=resid)) + stat_qq_band(distribution="norm", identity=TRUE) + 
+    stat_qq_line(distribution="norm", color="red", linetype="twodash", identity=TRUE) +
+    stat_qq_point(distribution="norm", identity=TRUE, size=1, alpha=0.5) + 
+    labs(x="Theoretical Quantiles", y="Sample Quantiles") + theme_bw()
+  #
+  grid.arrange(f1, f2, f3, f4, nrow=2) 
+}

@@ -1,6 +1,7 @@
 
-###matriz de covariancia (MatArp * sig2)
+### AUXILIARY FUNCTIONS FOR AR NORMAL MODEL ###
 
+## Covariance matrix (MatArp * sig2)
 MatArp = function(phi,n) {
   p = length(phi)
   if (n==1) Rn = 1
@@ -9,10 +10,11 @@ MatArp = function(phi,n) {
   return(Rn/(1-sum(rhos*phi)))
 }
 
-###############phi ----- pi
+
+## Transformation function: pi to phi
 estphit = function(pit) {
   p = length(pit)
-  Phi = matrix(0,ncol=p,nrow=p)
+  Phi = matrix(0, ncol=p, nrow=p)
   if (p>1) {
     diag(Phi) = pit
     for (j in 2:p) {
@@ -25,7 +27,25 @@ estphit = function(pit) {
   else return(pit)
 }
 
-############estimar pi - caso com censura
+
+## Transformation function: phi to pi
+tphitopi = function(phit) {
+  p = length(phit)
+  Phi = matrix(0, ncol=p, nrow=p)
+  Phi[p,] = phit
+  if (p>1) {
+    for (k in p:2) {
+      for (i in 1:(k-1)) {
+        Phi[k-1,i] = (Phi[k,i] + Phi[k,k]*Phi[k,k-i])/(1-Phi[k,k]^2)
+      }
+    }
+    return(diag(Phi))
+  }
+  else return(phit)
+}
+
+
+## Estimate pi - case with censoring
 lc = function(pi,D,n) {
   phi = estphit(pi)
   p = length(phi)
@@ -38,7 +58,8 @@ lc = function(pi,D,n) {
   return(-l)
 }
 
-############estimar pi - caso sem censura -- normal
+
+## Estimate pi - case without censoring (Normal)
 lcc = function(pi,y,x) {
   n = length(y)
   phi = estphit(pi)
@@ -52,9 +73,8 @@ lcc = function(pi,y,x) {
   return(-l)
 }
 
-################################################################################
-## Log-likelihood ##
-################################################################################
+
+## Log-likelihood Normal model
 LogVerosCens = function(cc, y, media, Psi, LI, LS){
   m = length(cc)
   gammai = media
@@ -81,19 +101,10 @@ LogVerosCens = function(cc, y, media, Psi, LI, LS){
   return(obj.out)
 }
 
-################################################################################
-## Amostrador Gibbs
-################################################################################
 
+## Gibbs sampler (normal model)
 amostradordegibbs = function(M, M0, nj, t1, cc1, y1, media, Gama, LI, LS){
 
-#  if (length(miss)>0) {
-#    g = media
-#    cc1[miss] = 0
-#    t1[-miss] = y1[-miss]
-#    muc = as.vector(g[miss]+Gama[miss,-miss]%*%solve(Gama[-miss,-miss])%*%(y1[-miss]-g[-miss]))
-#    y1[miss] = t1[miss] = muc
-#  }
     draws = matrix(NA, nrow=M, ncol=nj)
     draws[1,1:nj] = t1
     gammai = media
@@ -141,16 +152,15 @@ amostradordegibbs = function(M, M0, nj, t1, cc1, y1, media, Gama, LI, LS){
         }
       }
     }
-  # Amostra com burnin (M0)
+  # Sample with burn-in (M0)
   amostragibbs = draws[(M0+1):M,]
   obj.out = list(amostragibbs = amostragibbs)
   return(obj.out)
 }
 
-###############################################################################
-##Derivadas
-###############################################################################
 
+## Derivatives
+#################################
 aphi = function(phi) ifelse(length(phi)==1,log(MatArp(phi,length(phi))),
                             log(det(MatArp(phi,length(phi)))))
 

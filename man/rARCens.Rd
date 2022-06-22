@@ -8,7 +8,7 @@ Generating censored autoregressive data
 It simulates a censored response variable with autoregressive errors of order \eqn{p} following normal or Student-t innovations, with an established censoring rate.
 }
 \usage{
-rARCens(n, beta, pit, sig2 = 1, x = rep(1, n), cens = "left", 
+rARCens(n, beta, phi, sig2 = 1, x = rep(1, n), cens = "left", 
   pcens = 0.1, innov = "norm", nu = NULL)
 }
 \arguments{
@@ -16,7 +16,7 @@ rARCens(n, beta, pit, sig2 = 1, x = rep(1, n), cens = "left",
 
 \item{beta}{Vector of theoretical regression parameters of length \eqn{l}.}
 
-\item{pit}{Vector of theoretical partial autocorrelations. Each element must be in (-1,1).}
+\item{phi}{Vector of theoretical autoregressive coefficients of length \eqn{p}.}
 
 \item{sig2}{Theoretical variance of the error.}
 
@@ -32,8 +32,11 @@ an intercept \code{x} should contain a column of ones).}
 \item{nu}{Degrees of freedom for Student-t innovations.}
 }
 \value{
-\item{data}{Generated response (y), censoring indicator (cc), and lower (lcl) and upper (ucl) bounds of the interval which contains the true value of the censored observation.}
+\item{data}{Generated response (y), censoring indicator (cc), and lower (lcl) and upper (ucl) bounds of the interval, which contains the true value of the censored observation.}
 \item{param}{Theoretical parameters (beta, sig2, phi).}
+}
+\note{
+For data generation with Student-t innovations, the first \eqn{p} observations are not censored.
 }
 \author{
 Fernanda L. Schumacher, Katherine L. Valeriano, Victor H. Lachos, Christian E. Galarza,
@@ -42,9 +45,9 @@ and Larissa A. Matos
 \examples{
 library(ggplot2)
 
-## Generating a sample with normal innovations
+## Example 1: Generating a sample with normal innovations
 set.seed(1234)
-dat = rARCens(n=100, beta=c(1,-1), pit=c(.4,-.2), sig2=.5,
+dat = rARCens(n=100, beta=c(1,-1), phi=c(.48,-.2), sig2=.5,
               x=cbind(1,runif(100)), cens='left', pcens=.10)
 
 # Plotting the time serie
@@ -57,9 +60,9 @@ table(dat$data$cc)
 dat$param
 #[1]  1.00 -1.00  0.50  0.48 -0.20
 
-## Generating a sample with Student-t innovations
+## Example 2: Generating a sample with Student-t innovations
 set.seed(8278)
-dat1 = rARCens(n=100, beta=c(1,-1), pit=c(.4,-.2), sig2=.5,
+dat1 = rARCens(n=100, beta=c(1,-1), phi=c(.48,-.2), sig2=.5,
                x=cbind(1,rnorm(100)), cens='right', pcens=.10, 
                innov='t', nu=3)
 
