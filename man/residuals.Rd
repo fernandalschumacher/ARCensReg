@@ -14,13 +14,14 @@ The conditional residuals are obtained by subtracting the fitted values from the
 }
 \arguments{
 \item{object}{An object inheriting from class \code{ARpCRM} or \code{ARtpCRM}, representing a fitted AR(p) censored linear model.}
+
 \item{...}{Further arguments passed to or from other methods.}
 }
 \value{
 An object of class "residARpCRM", with the following components:
 \item{residuals}{Vector with the conditional residuals of length \eqn{n}.}
 \item{quantile.resid}{Vector with the quantile residuals of length \eqn{n}.}
-Generic function plot has methods to show a dispersion plot (residual vs. time), an autocorrelation plot, a histogram, and Quantile-Quantile (Q-Q) plot for the quantile residuals.
+Generic function \code{plot} has methods to show a graphic of residual vs. time, an autocorrelation plot, a histogram, and Quantile-Quantile (Q-Q) plot for the quantile residuals.
 }
 \author{
 Fernanda L. Schumacher, Katherine L. Valeriano, Victor H. Lachos, Christian E. Galarza,

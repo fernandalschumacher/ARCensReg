@@ -1,5 +1,7 @@
 ---
-output: github_document
+output:
+  github_document:
+    math_method: NULL
 bibliography: inst/REFERENCES.bib
 ---
 
