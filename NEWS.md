@@ -1,6 +1,6 @@
 ### News for package ARCensReg
 
-<font color='grey'>**ARCensReg 3.0.0 (2022-06-25)**</font>
+<font color='grey'>**ARCensReg 3.0.0 (2022-08-15)**</font>
 
 * Incorporate the `ARtCensReg` function to fit a univariate censored linear regression model with autoregressive errors considering Student-t innovations.
 
@@ -8,7 +8,7 @@
 
 * Function `residuals` was incorporated to compute the conditional and quantile residuals for objects inheriting from class ARpCRM or ARtpCRM, given as an output of `ARCensReg` and `ARtCensReg` function, respectively.
 
-* Function `plot` is also valid for objects returned by `residuals`. This procedure returns the following plots for the quantile residuals: a dispersion plot (residual vs. time), an autocorrelation plot, a histogram, and a Quantile-Quantile (Q-Q) plot.
+* Function `plot` is also valid for objects returned by `residuals`. This procedure returns the following plots for the quantile residuals: residual vs. time, an autocorrelation plot, a histogram, and a Quantile-Quantile (Q-Q) plot.
 
 * Argument `pit` was substituted by `phi` in the function `rARCens`. See the documentation.
 
