@@ -1,7 +1,7 @@
 globalVariables(c("z","lag","..density.."))
 
-ARtCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001, M=10,
-                       perc=0.25, MaxIter=400, pc=0.18, nufix=NULL, show_se=TRUE, quiet=FALSE){
+ARtCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, M=10, perc=0.25, MaxIter=400,
+                      pc=0.18, nufix=NULL, tol=0.0001, show_se=TRUE, quiet=FALSE){
   m = length(y)
   
   if (!is.numeric(y)) stop("y must be a numeric vector")
@@ -44,13 +44,6 @@ ARtCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001
     if (!all(lcl[cc==1]<ucl[cc==1])) stop ("lcl must be smaller than ucl")
   }
   
-  if (!is.null(x_pred)) {
-    x_pred = as.matrix(x_pred)
-    if (ncol(x_pred)!=ncol(as.matrix(x))) stop("x_pred must have the same number of columns than x")
-    if (sum(is.na(x_pred))>0) stop("There are some NA values in x_pred")
-    if (!is.numeric(x_pred)) stop("x_pred must be a numeric matrix")
-  }
-  
   #Validating supports
   if (!is.null(nufix)){ 
     if (length(c(nufix)) != 1) stop("nufix must be a positive value or 'NULL'")
@@ -80,7 +73,7 @@ ARtCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001
     print(call)
     cat('\n')
   }
-  out = suppressWarnings(SAEM_temporalT(cc, lcl, ucl, y, x, p, x_pred, tol, M, perc, MaxIter, pc, nufix, show_se, quiet))
+  out = suppressWarnings(SAEM_temporalT(cc, lcl, ucl, y, x, p, tol, M, perc, MaxIter, pc, nufix, show_se, quiet))
   q = ncol(x)
   if (is.null(nufix)){ lab = numeric(p+q+2); lab[p+q+2] = 'nu' } else { lab = numeric(p+q+1) }
   if (sum(abs(x[,1])) == nrow(x)){ for (i in 1:q) lab[i] = paste('beta',i-1,sep='') 
@@ -99,7 +92,7 @@ ARtCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001
   obj.out = out$res
   obj.out$call = match.call()
   obj.out$tab = tab
-  if (sum(cc) == 0){ cens = "no-censoring" 
+  if (sum(cc) == 0){ cens = "no censoring" 
   } else {
     if (sum(cc) == length(miss)){ cens = "missing"
     } else {
@@ -185,7 +178,7 @@ plot.ARtpCRM = function(x, ...) {
   
   for (i in 1:npar){
     data1 = data.frame(z=x$plot$Theta[,i])
-    myplot[[i]] = ggplot(data1, aes(x=seq(0,count), y=z)) + geom_line() +
+    myplot[[i]] = ggplot(data1, aes(x=seq(1,count), y=z)) + geom_line() +
       geom_vline(xintercept=x$plot$cpl, color="red", linetype="twodash") +
       labs(x="Iteration", y=label[[i]]) + theme_bw()
   }
@@ -213,3 +206,33 @@ residuals.ARtpCRM = function(object, ...) {
   class(resid) = "residARpCRM"
   return(resid)
 }
+
+
+#' @export
+predict.ARtpCRM = function(object, x_pred, ...) {
+
+  # Validation  
+  x_pred = as.matrix(x_pred)
+  if (ncol(x_pred)!=ncol(as.matrix(object$x))) stop("x_pred must have the same number of columns than x")
+  if (sum(is.na(x_pred))>0) stop("There are some NA values in x_pred")
+  if (!is.numeric(x_pred)) stop("x_pred must be a numeric matrix")
+  
+  m = nrow(x_pred)
+  n = length(c(object$yest))
+  p = length(c(object$phi))
+  beta = object$beta
+  phi = object$phi
+  meanDiff = object$yest - object$x%*%beta
+  media.pre = x_pred%*%beta
+  y_pred = matrix(0, ncol=1, nrow=m)
+  
+  for (k in 1:m){
+    a1_pred = 0
+    if (k==1){ a1_pred = t(phi)%*%c(meanDiff[n:(n-p+k)])
+    } else { if (1<k & k<=p){ a1_pred = t(phi)%*%c((y_pred[(k-1):1] - media.pre[(k-1):1]), meanDiff[n:(n-p+k)])
+      } else { if (k>p) a1_pred = t(phi)%*%c(y_pred[(k-1):(k-p)] - media.pre[(k-1):(k-p)]) }}
+    y_pred[k,] = media.pre[k] + a1_pred
+  }
+  return (y_pred)
+}
+

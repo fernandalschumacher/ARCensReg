@@ -38,7 +38,7 @@ The `ARCensReg` package provides the following functions:
 * `rARCens`: simulates a censored response variable with autoregressive errors of order $p$.
 * `residuals`: computes conditional and quantile residuals.
 
-`print`, `summary`, and `plot` functions also work for objects given as an output of functions `ARCensReg` and `ARtCensReg`. Function `plot` also has methods for outputs of functions `InfDiag` and `residuals`.
+`predict`, `print`, `summary`, and `plot` functions also work for objects given as an output of functions `ARCensReg` and `ARtCensReg`. Function `plot` also has methods for outputs of functions `InfDiag` and `residuals`.
 
 Next, we will describe how to install the package and use all the previous methods in artificial examples.
 

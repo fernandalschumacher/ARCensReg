@@ -12,8 +12,8 @@ observations, and supports missing values on the dependent variable.
 It also provides convergence plots when exists at least one censored observation.
 }
 \usage{
-ARCensReg(cc, lcl = NULL, ucl = NULL, y, x, p = 1, x_pred = NULL, 
-  tol = 1e-04, M = 10, perc = 0.25, MaxIter = 400, pc = 0.18, 
+ARCensReg(cc, lcl = NULL, ucl = NULL, y, x, p = 1, M = 10, 
+  perc = 0.25, MaxIter = 400, pc = 0.18, tol = 1e-04, 
   show_se = TRUE, quiet = FALSE)
 }
 \arguments{
@@ -31,11 +31,6 @@ intercept, \code{x} should contain a column of ones).}
 
 \item{p}{Order of the autoregressive process. It must be a positive integer value.}
 
-\item{x_pred}{Matrix of covariates for responses to be predicted. If x_pred = \code{NULL} 
-no responses are predicted.}
-
-\item{tol}{The convergence maximum error permitted.}
-
 \item{M}{Size of the Monte Carlo sample generated in each step of the SAEM algorithm. 
 Default=10.}
 
@@ -45,6 +40,8 @@ Default=10.}
 
 \item{pc}{Percentage of initial iterations of the SAEM algorithm with no memory. It is recommended that 
 \code{50<MaxIter*pc<100}. Default=0.18.}
+
+\item{tol}{The convergence maximum error permitted.}
 
 \item{show_se}{\code{TRUE} or \code{FALSE}. Indicates if the standard errors should 
 be estimated. Default=\code{TRUE}.}
@@ -79,7 +76,6 @@ Specifically, the following components are returned:
 \item{AIC}{Akaike information criterion.}
 \item{BIC}{Bayesian information criterion.}
 \item{AICcorr}{Corrected Akaike information criterion.}
-\item{pred}{Predicted values (if x_pred is not \code{NULL}).}
 \item{yest}{Augmented response variable based on the fitted model.}
 \item{yyest}{Final estimative of \code{E(Y\%*\%t(Y))}.}
 \item{x}{Matrix of covariates of dimension \eqn{n}x\eqn{l}.}
@@ -113,7 +109,7 @@ dat = rARCens(n=n, beta=2, phi=.5, sig2=.3, x=x, cens='left', pcens=.1)
 
 # Fitting the model (quick convergence)
 fit0 = ARCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, dat$data$y, x,
-                 tol=0.001, M=5, pc=.12, show_se=FALSE)
+                 M=5, pc=.12, tol=0.001, show_se=FALSE)
 \donttest{
 ## Example 2: (p = l = 2)
 # Generating a sample

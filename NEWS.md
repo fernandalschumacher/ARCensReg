@@ -4,7 +4,7 @@
 
 * Incorporate the `ARtCensReg` function to fit a univariate censored linear regression model with autoregressive errors considering Student-t innovations.
 
-* Generic functions `print`, `summary`, and `plot` have methods for objects given as an output of `ARCensReg` and `ARtCensReg` functions.
+* Generic functions `predict`, `print`, `summary`, and `plot` have methods for objects given as an output of `ARCensReg` and `ARtCensReg` functions.
 
 * Function `residuals` was incorporated to compute the conditional and quantile residuals for objects inheriting from class ARpCRM or ARtpCRM, given as an output of `ARCensReg` and `ARtCensReg` function, respectively.
 

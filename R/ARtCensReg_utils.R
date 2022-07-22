@@ -155,10 +155,10 @@ Gibbs_samplerCLRT = function(X, yobs, SAEMu, cc, LI, LS, phi, beta, sigma2, nu, 
 }
 
 ##############################################################
-# Parameter estimation #
+# Parameter estimation - Student-t innovations #
 ##############################################################
 
-SAEM_temporalT = function(cens, LI, LS, y, x, p, x_pred, tol, M, perc, MaxIter, pc, 
+SAEM_temporalT = function(cens, LI, LS, y, x, p, tol, M, perc, MaxIter, pc, 
                            nufix, show_ep, quiet){
   if (!quiet){ pb = txtProgressBar(min = 0, max = MaxIter, style = 3) }
   yobs = y
@@ -274,29 +274,15 @@ SAEM_temporalT = function(cens, LI, LS, y, x, p, x_pred, tol, M, perc, MaxIter, 
     se.app     = sqrt(variancias)       # standard error approximation
   }
   
-  # Prediction
-  if (!is.null(x_pred)){
-    m = nrow(x_pred)
-    meanDiff = SAEM.Y - X%*%beta
-    media.pre = as.matrix(x_pred)%*%beta
-    y_pred = matrix(0, ncol=1, nrow=m)
-    for (k in 1:m){
-      y_pred[k,] = media.pre[k] + 
-        if(k==1){t(phi)%*%c(meanDiff[n:(n-p+k)])}else{0} +
-        if(1<k & k<=p){t(phi)%*%c((y_pred[(k-1):1] - media.pre[(k-1):1]),(meanDiff[n:(n-p+k)]))}else{0} +
-        if(k>p){t(phi)%*%c(y_pred[(k-1):(k-p)] - media.pre[(k-1):(k-p)])}else{0}
-    }
-    if (show_ep) resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta, SE=se.app,
-                                    pred=y_pred)
-    else resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta, pred=y_pred)
-  } else {
-    if (show_ep) resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta, SE=se.app)
-    else resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta)
-  }
+  # Results
+  if (show_ep) resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta, SE=se.app)
+  else resultados = list(beta=beta, sigma2=sigma2, phi=phi, nu=nu, theta=theta)
+  
   resultados$yest = SAEM.Y
   resultados$uest = SAEM.U
   resultados$x = x
   resultados$iter = count
   resultados$criteria = criterio2
-  return (list(res=resultados, time=timediffe, Theta=Theta))
+  colnames(Theta) = NULL; rownames(Theta) = NULL
+  return (list(res=resultados, time=timediffe, Theta=Theta[-1,]))
 }

@@ -1,6 +1,6 @@
 
-ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001, M=10, 
-                     perc=0.25, MaxIter=400, pc=0.18, show_se=TRUE, quiet=FALSE){
+ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, M=10, perc=0.25, MaxIter=400, 
+                     pc=0.18, tol=0.0001, show_se=TRUE, quiet=FALSE){
   m = length(y)
   
   if (!is.numeric(y)) stop("y must be a numeric vector")
@@ -43,13 +43,6 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
     if (!all(lcl[cc==1]<ucl[cc==1])) stop ("lcl must be smaller than ucl")
   }
   
-  if (!is.null(x_pred)) {
-    x_pred = as.matrix(x_pred)
-    if (ncol(x_pred)!=ncol(as.matrix(x))) stop("x_pred must have the same number of columns than x")
-    if (sum(is.na(x_pred))>0) stop("There are some NA values in x_pred")
-    if (!is.numeric(x_pred)) stop("x_pred must be a numeric matrix")
-  }
-
   #Validating supports
   if (length(p) != 1) stop("p must be a positive integer value")
   if (!is.numeric(p)) stop("p must be a positive integer value")
@@ -76,40 +69,31 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
   print(call)
   cat('\n')
   }
-  out = suppressWarnings(SAEM(cc, lcl, ucl, y, x, p, M, perc, MaxIter, pc, x_pred, miss, tol, show_se, quiet))
+  out = suppressWarnings(SAEM(cc, lcl, ucl, y, x, p, M, perc, MaxIter, pc, miss, tol, show_se, quiet))
   l = ncol(x)
-  lab = numeric(p +l +1)
+  lab = numeric(p + l + 1)
   if (sum(abs(x[,1])) == nrow(x)){ for (i in 1:ncol(x)) lab[i] = paste('beta',i-1,sep='') 
   } else { for (i in 1:ncol(x)) lab[i] = paste('beta',i,sep='') }
   lab[l+1] = 'sigma2'
   for (i in ((l+2):length(lab))) lab[i] = paste('phi',i-l-1,sep='')
   if (show_se) {
-    tab = round(rbind(out$theta,out$ep),4)
+    tab = round(rbind(out$res$theta, out$res$SE), 4)
     colnames(tab) = lab
     rownames(tab) = c("","s.e.")
   } else {
-    tab = round(rbind(out$theta),4)
+    tab = round(rbind(out$res$theta), 4)
     colnames(tab) = lab
     rownames(tab) = c("")
   }
-  critFin = c(out$loglik, out$AIC, out$BIC, out$AICcorr)
-  critFin = round(t(as.matrix(critFin)),digits=3)
+  critFin = c(out$res$loglik, out$res$AIC, out$res$BIC, out$res$AICcorr)
+  critFin = round(t(as.matrix(critFin)), digits=3)
   dimnames(critFin) = list(c("Value"),c("Loglik", "AIC", "BIC","AICcorr"))
-
-  if (!is.null(x_pred)) obj.out = list(beta=out$beta, sigma2=out$sigmae, phi=out$phi1, pi1=out$pi1, theta=out$theta, SE=out$ep,
-                                   loglik=out$loglik, AIC=out$AIC, BIC=out$BIC, AICcorr=out$AICcorr, 
-                                   pred=out$pred)
-  else obj.out = list(beta=out$beta, sigma2=out$sigmae, phi=out$phi1, pi1=out$pi1, theta=out$theta, SE=out$ep,
-                  loglik=out$loglik, AIC=out$AIC, BIC=out$BIC, AICcorr=out$AICcorr)
-  if (sum(cc)==0){
-    obj.out$yest=y; obj.out$yyest=y%*%t(y); obj.out$x=x; obj.out$criteria=out$criteria
-  } else {
-    obj.out$yest=out$yest; obj.out$yyest=out$yyest; obj.out$x=x; obj.out$iter=out$iter; obj.out$criteria=out$criteria
-  }
+  
+  obj.out = out$res
   obj.out$call = match.call()
   obj.out$tab = tab
   obj.out$critFin = critFin
-  if (sum(cc) == 0){ cens = "no-censoring" 
+  if (sum(cc) == 0){ cens = "no censoring" 
   } else {
     if (sum(cc) == length(miss)){ cens = "missing"
     } else {
@@ -127,16 +111,18 @@ ARCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, x_pred=NULL, tol=0.0001,
     obj.out$M = M
     obj.out$pc = pc
   }
-  obj.out$time = out$timediff
+  obj.out$time = out$time
   #plot
-  obj.out$plot$cpl = pc*MaxIter
-  obj.out$plot$npar = l+1+p
-  obj.out$plot$labels = list()
-  if (sum(abs(x[,1]))==nrow(x)) { for(i in 1:l){obj.out$plot$labels[[i]] = bquote(beta[.(i-1)])} 
+  if (sum(cc) > 0){
+    obj.out$plot$cpl = pc*MaxIter
+    obj.out$plot$npar = l+1+p
+    obj.out$plot$labels = list()
+    if (sum(abs(x[,1]))==nrow(x)) { for(i in 1:l){obj.out$plot$labels[[i]] = bquote(beta[.(i-1)])} 
     } else { for(i in 1:l){obj.out$plot$labels[[i]] = bquote(beta[.(i)])} }
-  obj.out$plot$labels[[l+1]] = bquote(sigma^2)
-  for(i in 1:p){obj.out$plot$labels[[i+l+1]] = bquote(phi[.(i)])}
-  obj.out$plot$Theta = out$Theta
+    obj.out$plot$labels[[l+1]] = bquote(sigma^2)
+    for(i in 1:p){obj.out$plot$labels[[i+l+1]] = bquote(phi[.(i)])}
+    obj.out$plot$Theta = out$Theta
+  }
   #class
   class(obj.out)  = 'ARpCRM'
   invisible(obj.out)
@@ -218,6 +204,29 @@ plot.ARpCRM = function(x, ...) {
 
 
 #' @export
+predict.ARpCRM = function(object, x_pred, ...){
+
+  # validation
+  x_pred = as.matrix(x_pred)
+  if (ncol(x_pred)!=ncol(as.matrix(object$x))) stop("x_pred must have the same number of columns than x")
+  if (sum(is.na(x_pred))>0) stop("There are some NA values in x_pred")
+  if (!is.numeric(x_pred)) stop("x_pred must be a numeric matrix")
+  
+  y = object$yest
+  x = object$x
+  beta1 = object$beta
+  sigmae = object$sigma2
+  phi1 = object$phi
+  m = length(c(y))
+  h = nrow(x_pred)
+  sig_pred = MatArp(phi1, m+h)*sigmae
+  pred = x_pred%*%beta1 + sig_pred[m+1:h, 1:m]%*%solve(sig_pred[1:m, 1:m])%*%(y - x%*%beta1)
+  
+  return (pred)
+}
+
+
+#' @export
 residuals.ARpCRM = function(object, ...) {
   
   x = object$x
@@ -241,7 +250,7 @@ plot.residARpCRM = function(x, ...) {
   resid = data.frame(resid=x$quantile.resid)
   m = nrow(resid)
   #
-  f1 = ggplot(resid, aes(x=seq(1,m),y=resid)) + geom_point() + labs(x="Time", y="Quantile Residual") + 
+  f1 = ggplot(resid, aes(x=seq(1,m),y=resid)) + geom_line() + labs(x="Time", y="Quantile Residual") + 
     geom_hline(yintercept=c(-2,0,2), color="red", linetype="twodash") + theme_bw()
   #
   bacfdf = with(acf(resid, plot=FALSE), data.frame(lag, acf))
