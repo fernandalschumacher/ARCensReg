@@ -19,21 +19,19 @@ Authors@R:
            email = "hlachos@uconn.edu",
            comment = c(ORCID = "0000-0002-7239-2459")),
   person(given = "Christian",
-           family = "Galarza Morales",
+           family = "G. Morales",
            role = "ctb",
            email = "cgalarza88@gmail.com",
            comment = c(ORCID = "0000-0002-4818-6006")),
   person(given = "Larissa",
-           family = "Avila Matos",
+           family = "A. Matos",
            role = "ctb",
            email = "larissam@unicamp.br",
            comment = c(ORCID = "0000-0002-2635-0901")))
 Description: It fits a univariate left, right, or interval censored linear regression model
     with autoregressive errors, considering the normal or the Student-t distribution for the 
     innovations. It provides estimates and standard errors of the parameters, predicts 
-    future observations, and it supports missing values on the dependent variable. 
-    It also performs influence diagnostic under the normal model through local influence for 
-    three possible perturbation schemes.
+    future observations, and supports missing values on the dependent variable.
     References used for this package:
     Schumacher, F. L., Lachos, V. H., & Dey, D. K. (2017). Censored regression models with 
     autoregressive errors: A likelihood-based perspective. Canadian Journal of Statistics,

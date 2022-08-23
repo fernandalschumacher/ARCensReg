@@ -10,16 +10,16 @@
 
 * Function `plot` is also valid for objects returned by `residuals`. This procedure returns the following plots for the quantile residuals: residual vs. time, an autocorrelation plot, a histogram, and a Quantile-Quantile (Q-Q) plot.
 
-* Argument `pit` was substituted by `phi` in the function `rARCens`. See the documentation.
+* Argument `pit` was substituted by `phi` in the function `rARCens`. Please see the documentation for more information.
 
-* Function `rARCens` also simulates datasets with Student-t innovations.
+* Function `rARCens` was modified to also simulate datasets with Student-t innovations.
 
-* Some modifications in the arguments of the `InfDiag` function were made. The generic function `plot` also works for objects given as an output of function `InfDiag`. 
+* Some modifications in the arguments of the `InfDiag` function were made. The generic function `plot` is available for outputs of function `InfDiag`. 
 
 
 <font color='grey'>**ARCensReg 2.1 (2016-09-11)**</font>
 
-*
+* Minor bugs were fixed.
 
 
 <font color='grey'>**ARCensReg 2.0 (2016-09-09)**</font>
