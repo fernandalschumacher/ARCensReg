@@ -32,9 +32,9 @@ ARtCensReg = function(cc, lcl=NULL, ucl=NULL, y, x, p=1, M=10, perc=0.25, MaxIte
     if (!is.numeric(lcl) | !is.numeric(ucl)) stop("lcl and ucl must be numeric vectors")
     if (length(miss)>0){
       censor = (cc==1 & !is.na(y))
-      if (any(is.infinite(lcl[censor])) & any(is.infinite(ucl[censor]))) stop("lcl or ucl must be finite for censored data")
+      if (any(is.infinite(lcl[censor]) & is.infinite(ucl[censor]))) stop("lcl or ucl must be finite for censored data")
     } else {
-      if (any(is.infinite(lcl[cc==1])) & any(is.infinite(ucl[cc==1]))) stop("lcl or ucl must be finite for censored data") 
+      if (any(is.infinite(lcl[cc==1]) & is.infinite(ucl[cc==1]))) stop("lcl or ucl must be finite for censored data") 
     }
     if (length(lcl) != m) stop("lcl does not have the same length than y")
     if (length(ucl) != m) stop("ucl does not have the same length than y")
