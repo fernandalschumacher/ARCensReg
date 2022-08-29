@@ -6,9 +6,9 @@ Censored autoregressive regression model with Student-t innovations
 }
 \description{
 It fits a univariate left, right, or interval censored linear regression model 
-with autoregressive errors considering Student-t innovations through the SAEM algorithm. 
-It provides estimates and standard errors of the parameters, predicts future 
-observations, and supports missing values on the dependent variable. 
+with autoregressive errors considering Student-t innovations, through the SAEM algorithm. 
+It provides estimates and standard errors of the parameters, supporting missing 
+values on the dependent variable. 
 }
 \usage{
 ARtCensReg(cc, lcl = NULL, ucl = NULL, y, x, p = 1, M = 10,
@@ -18,13 +18,15 @@ ARtCensReg(cc, lcl = NULL, ucl = NULL, y, x, p = 1, M = 10,
 \arguments{
 \item{cc}{Vector of censoring indicators of length \eqn{n}, where \eqn{n} is the 
 total observations. For each observation: 0 if non-censored, 1 if censored/missing.}
-  
-\item{lcl, ucl}{Vectors of length \eqn{n} that represent the lower and upper bounds of the interval, which contains the true value of the censored observation. Default =\code{NULL}, indicating no-censored data. For left censoring, \code{lcl=-Inf} and \code{ucl=c}. For right censoring, \code{lcl=c} and \code{ucl=Inf}. For interval censoring, \code{lcl} and \code{ucl} must be finite, while missing data could be defined by setting \code{lcl=-Inf} and \code{ucl=Inf}.
-}
-  
+
+
+\item{lcl, ucl}{Vectors of length \eqn{n} that represent the lower and upper bounds 
+of the interval, which contains the observade value of the censored observation. 
+Default=\code{NULL}, indicating no-censored data. See details for more information.}
+
 \item{y}{Vector of responses of length \eqn{n}.}
   
-\item{x}{Matrix of covariates of dimension \eqn{n}x\eqn{l}, where \eqn{l} is the number 
+\item{x}{Matrix of covariates of dimension \eqn{n} x \eqn{l}, where \eqn{l} is the number 
 of fixed effects including the intercept, if considered (in models which include an 
 intercept, \code{x} should contain a column of ones).}
   
@@ -58,7 +60,12 @@ The linear regression model with autocorrelated errors, defined as a discrete-ti
 
 \eqn{\xi_t = \phi_1 \xi_{t-1} + ... + \phi_p \xi_{t-p} + \eta_t, t=1,..., n,}
 
-where \eqn{Y_t} is the response variable (we assume that \eqn{Y_t} is not fully observed for all \eqn{t}), \eqn{\beta = (\beta_1,..., \beta_l)^T} is a vector of regression parameters of dimension \eqn{l}, \eqn{x_t = (x_{t1},..., x_{tl})^T} is a vector of non-stochastic regressor variables values, and \eqn{\xi_t} is the AR error with \eqn{\eta_t} being a shock of disturbance following the Student-t distribution, \eqn{\phi = (\phi_1,..., \phi_p)^T} being the vector of AR coefficients, and \eqn{n} denoting the sample size. 
+where \eqn{Y_t} is the response variable, \eqn{\beta = (\beta_1,..., \beta_l)^T} is a vector of regression parameters of dimension \eqn{l}, \eqn{x_t = (x_{t1},..., x_{tl})^T} is a vector of non-stochastic regressor variables values, and \eqn{\xi_t} is the AR error with \eqn{\eta_t} being a shock of disturbance following the Student-t distribution with \eqn{\nu} degrees of freedom, \eqn{\phi = (\phi_1,..., \phi_p)^T} being the vector of AR coefficients, and \eqn{n} denoting the sample size. 
+
+\eqn{Y_t} is not fully observed for all \eqn{t}. 
+For left censored observations, we have \code{lcl=-Inf} and \code{ucl=\eqn{V_t}}, 
+such that the true value \eqn{Y_i \leq V_i}. For right censoring, \code{lcl=\eqn{V_t}} 
+and \code{ucl=Inf}, such that \eqn{Y_i \geq V_i}. For interval censoring, \code{lcl} and \code{ucl} must be finite values, such that  \eqn{V_{1i} \leq Y_i \leq V_{2i}}. Missing data can be defined by setting \code{lcl=-Inf} and \code{ucl=Inf}.
 
 The initial values are obtained by ignoring censoring and applying maximum likelihood 
 estimation with the censored data replaced by their censoring limits. Moreover, 
@@ -95,7 +102,7 @@ Specifically, the following components are returned:
 \item{plot}{A list containing convergence information.}
 }
 \author{
-Fernanda L. Schumacher, Katherine L. Valeriano, Victor H. Lachos, Christian E. Galarza, and Larissa A. Matos
+Katherine L. Valeriano, Fernanda L. Schumacher, and Larissa A. Matos
 }
 \examples{
 ## Example 1: (p = l = 1)
@@ -139,6 +146,5 @@ plot(fit2)}
 \keyword{censored regression}
 \keyword{autoregressive errors}
 \seealso{
-\code{\link{arima}}, \code{\link[ARCensReg]{ARCensReg}}, 
-\code{\link[SMNCensReg]{CensReg.SMN}}
+\code{\link{arima}}, \code{\link[ARCensReg]{ARCensReg}}
 }
