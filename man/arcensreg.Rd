@@ -24,7 +24,7 @@ Default=\code{NULL}, indicating no-censored data. See details for more informati
 
 \item{y}{Vector of responses of length \eqn{n}.}
 
-\item{x}{Matrix of covariates of dimension \eqn{n} x \eqn{l}, where \eqn{l} is the number 
+\item{x}{Matrix of covariates of dimension \eqn{n \times l}, where \eqn{l} is the number 
 of fixed effects including the intercept, if considered (in models which include an 
 intercept, \code{x} should contain a column of ones).}
 
@@ -55,12 +55,16 @@ The linear regression model with autocorrelated errors, defined as a discrete-ti
 
 \eqn{\xi_t = \phi_1 \xi_{t-1} + ... + \phi_p \xi_{t-p} + \eta_t, t=1, ..., n,}
 
-where \eqn{Y_t} is the response variable, \eqn{\beta = (\beta_1, ..., \beta_l)^T} is a vector of regression parameters of dimension \eqn{l}, and \eqn{x_t = (x_{t1}, ..., x_{tl})^T} is a vector of non-stochastic regressor variables values; \eqn{\xi_t} is the AR error with Gaussian disturbance \eqn{\eta_t}, \eqn{\phi = (\phi_1, ..., \phi_p)^T} is the vector of AR coefficients, and \eqn{n} is the sample size. 
+where \eqn{Y_t} is the response variable, \eqn{\beta = (\beta_1, ..., \beta_l)^T} is a vector 
+of regression parameters of dimension \eqn{l}, and \eqn{x_t = (x_{t1}, ..., x_{tl})^T} is a 
+vector of non-stochastic regressor variables values; \eqn{\xi_t} is the AR error with Gaussian 
+disturbance \eqn{\eta_t}, \eqn{\phi = (\phi_1, ..., \phi_p)^T} is the vector of AR coefficients, 
+and \eqn{n} is the sample size. 
 
-\eqn{Y_t} is not fully observed for all \eqn{t}. 
-For left censored observations, we have \code{lcl=-Inf} and \code{ucl=\eqn{V_t}}, 
-such that the true value \eqn{Y_i \leq V_i}. For right censoring, \code{lcl=\eqn{V_t}} 
-and \code{ucl=Inf}, such that \eqn{Y_i \geq V_i}. For interval censoring, \code{lcl} and \code{ucl} must be finite values, such that  \eqn{V_{1i} \leq Y_i \leq V_{2i}}. Missing data can be defined by setting \code{lcl=-Inf} and \code{ucl=Inf}.
+It is assumed that \eqn{Y_t} is not fully observed for all \eqn{t}. 
+For left censored observations, we have \code{lcl=-Inf} and \code{ucl=}\eqn{V_t}, 
+such that the true value \eqn{Y_t \leq V_t}. For right censoring, \code{lcl=}\eqn{V_t} 
+and \code{ucl=Inf}, such that \eqn{Y_t \geq V_t}. For interval censoring, \code{lcl} and \code{ucl} must be finite values, such that  \eqn{V_{1t} \leq Y_t \leq V_{2t}}. Missing data can be defined by setting \code{lcl=-Inf} and \code{ucl=Inf}.
 
 The initial values are obtained by ignoring censoring and applying maximum likelihood 
 estimation with the censored data replaced by their censoring limits. Furthermore, just set \code{cc} as a vector of zeros to fit a regression model with autoregressive errors for non-censored data.
@@ -81,7 +85,7 @@ Specifically, the following components are returned:
 \item{AICcorr}{Corrected Akaike information criterion.}
 \item{yest}{Augmented response variable based on the fitted model.}
 \item{yyest}{Final estimative of \code{E(Y\%*\%t(Y))}.}
-\item{x}{Matrix of covariates of dimension \eqn{n}x\eqn{l}.}
+\item{x}{Matrix of covariates of dimension \eqn{n \times l}.}
 \item{iter}{Number of iterations until convergence.}
 \item{criteria}{Attained criteria value.}
 \item{call}{The \code{ARCensReg} call that produced the object.}

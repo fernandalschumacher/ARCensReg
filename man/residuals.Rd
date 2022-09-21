@@ -2,7 +2,7 @@
 \alias{residuals.ARpCRM}\alias{residuals.ARtpCRM}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Extract model residuals from ARpCRM and ARtpCRM objects
+Extract model residuals from ARpCRM or ARtpCRM objects
 }
 \description{
 The conditional residuals are obtained by subtracting the fitted values from the response vector, while the quantile residuals are obtained by inverting the estimated distribution function for each observation to obtain approximately normally distributed residuals. See, for instance, \insertCite{dunn1996randomized;textual}{ARCensReg} and \insertCite{kalliovirta2012misspecification;textual}{ARCensReg}.
@@ -13,7 +13,8 @@ The conditional residuals are obtained by subtracting the fitted values from the
 \method{residuals}{ARtpCRM}(object, ...)
 }
 \arguments{
-\item{object}{An object inheriting from class \code{ARpCRM} or \code{ARtpCRM}, representing a fitted AR(p) censored linear model.}
+\item{object}{An object inheriting from class \code{ARpCRM} or \code{ARtpCRM}, 
+representing a fitted AR(p) censored linear model.}
 
 \item{...}{Further arguments passed to or from other methods.}
 }

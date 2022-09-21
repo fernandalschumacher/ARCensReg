@@ -238,7 +238,7 @@ residuals.ARpCRM = function(object, ...) {
   res = object$yest - x%*%object$beta
   for (i in (p+1):m) residuals[i] = res[i] - sum(object$phi*res[(i-1):(i-p)])
   
-  resid = list(residuals=residuals, quantile.resid=residuals/sqrt(object$sigma2))
+  resid = list(residuals=residuals[-(1:p)], quantile.resid=(residuals[-(1:p)])/sqrt(object$sigma2))
   class(resid) = "residARpCRM"
   return(resid)
 }
@@ -248,23 +248,24 @@ residuals.ARpCRM = function(object, ...) {
 plot.residARpCRM = function(x, ...) {
   
   resid = data.frame(resid=x$quantile.resid)
+  replot = list(4)
   m = nrow(resid)
   #
-  f1 = ggplot(resid, aes(x=seq(1,m),y=resid)) + geom_line() + labs(x="Time", y="Quantile Residual") + 
+  replot[[1]] = ggplot(resid, aes(x=seq(1,m),y=resid)) + geom_line() + labs(x="Time", y="Quantile Residual") + 
     geom_hline(yintercept=c(-2,0,2), color="red", linetype="twodash") + theme_bw()
   #
-  bacfdf = with(acf(resid, plot=FALSE), data.frame(lag, acf))
-  f2 = ggplot(data=bacfdf, aes(x=lag, y=acf)) + geom_hline(aes(yintercept=0)) + theme_bw() +
-    geom_segment(aes(xend=lag, yend=0)) + labs(x="Lag", y="ACF") +
-    geom_hline(yintercept=c(qnorm(0.975)/sqrt(m),-qnorm(0.975)/sqrt(m)), colour="red", linetype="twodash")
-  #
-  f3 = ggplot(resid, aes(x=resid)) + geom_histogram(aes(y=..density..), fill="grey", color="black", bins=15) +
-    stat_function(fun=dnorm, col="red", linetype="twodash") + labs(x="Quantile Residual",y="Density") + theme_bw()
-  #
-  f4 = ggplot(resid, aes(sample=resid)) + stat_qq_band(distribution="norm", identity=TRUE) + 
+  replot[[2]] = ggplot(resid, aes(sample=resid)) + stat_qq_band(distribution="norm", identity=TRUE) + 
     stat_qq_line(distribution="norm", color="red", linetype="twodash", identity=TRUE) +
     stat_qq_point(distribution="norm", identity=TRUE, size=1, alpha=0.5) + 
     labs(x="Theoretical Quantiles", y="Sample Quantiles") + theme_bw()
   #
-  grid.arrange(f1, f2, f3, f4, nrow=2) 
+  replot[[3]] = ggplot(resid, aes(x=resid)) + geom_histogram(aes(y=..density..), fill="grey", color="black", bins=15) +
+    stat_function(fun=dnorm, col="red", linetype="twodash") + labs(x="Quantile Residual",y="Density") + theme_bw()
+  #
+  bacfdf = with(acf(resid, plot=FALSE), data.frame(lag, acf))
+  replot[[4]] = ggplot(data=bacfdf, aes(x=lag, y=acf)) + geom_hline(aes(yintercept=0)) + theme_bw() +
+    geom_segment(aes(xend=lag, yend=0)) + labs(x="Lag", y="ACF") +
+    geom_hline(yintercept=c(qnorm(0.975)/sqrt(m),-qnorm(0.975)/sqrt(m)), colour="red", linetype="twodash")
+  #
+  grid.arrange(grobs=replot, widths=c(1, 1, 1), layout_matrix = rbind(c(1, 1, 1), c(2, 3, 4)))
 }

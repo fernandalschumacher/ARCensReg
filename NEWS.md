@@ -12,7 +12,7 @@
 
 * Argument `pit` was substituted by `phi` in the function `rARCens`. Please see the documentation for more information.
 
-* Function `rARCens` was modified to also simulate datasets with Student-t innovations.
+* Function `rARCens` was modified to simulate datasets with Student-t innovations.
 
 * Some modifications in the arguments of the `InfDiag` function were made. The generic function `plot` is available for outputs of function `InfDiag`. 
 

@@ -202,7 +202,7 @@ residuals.ARtpCRM = function(object, ...) {
   quant = residuals/sqrt(object$sigma2)
   quant = qnorm(pt(quant, object$nu))
   
-  resid = list(residuals=residuals, quantile.resid=quant)
+  resid = list(residuals=residuals[-(1:p)], quantile.resid=quant[-(1:p)])
   class(resid) = "residARpCRM"
   return(resid)
 }
