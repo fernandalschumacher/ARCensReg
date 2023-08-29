@@ -1,7 +1,7 @@
 Package: ARCensReg
 Type: Package
 Title: Fitting Univariate Censored Linear Regression Model with Autoregressive Errors
-Version: 3.0.0
+Version: 3.0.1
 Authors@R: 
   c(person(given = "Fernanda",
            family = "L. Schumacher",

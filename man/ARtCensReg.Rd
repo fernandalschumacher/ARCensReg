@@ -121,6 +121,7 @@ dat = rARCens(n=n, beta=2, phi=.6, sig2=.3, x=x, cens='right', pcens=.05,
 # Fitting the model (quick convergence)
 fit0 = ARtCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, dat$data$y, x,
                  M=5, pc=.12, tol=0.001)
+fit0
 \donttest{
 ## Example 2: (p = l = 2)
 # Generating a sample
@@ -133,13 +134,13 @@ dat = rARCens(n=n, beta=c(2,1), phi=c(.48,-.2), sig2=.5, x=x, cens='left',
 # Fitting the model with nu known
 fit1 = ARtCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, dat$data$y, x,
                   p=2, M=15, pc=.20, nufix=5)
-fit1$tab
+summary(fit1)
 plot(fit1)
 
 # Fitting the model with nu unknown
 fit2 = ARtCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, dat$data$y, x,
                  p=2, M=15, pc=.20)
-fit2$tab
+summary(fit2)
 plot(fit2)}
 }
 \references{

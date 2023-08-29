@@ -117,6 +117,7 @@ dat = rARCens(n=n, beta=2, phi=.5, sig2=.3, x=x, cens='left', pcens=.1)
 # Fitting the model (quick convergence)
 fit0 = ARCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, dat$data$y, x,
                  M=5, pc=.12, tol=0.001, show_se=FALSE)
+fit0
 \donttest{
 ## Example 2: (p = l = 2)
 # Generating a sample
@@ -128,7 +129,7 @@ dat = rARCens(n=n, beta=c(2,1), phi=c(.48,-.2), sig2=.5, x=x, cens='left',
 # Fitting the model
 fit1 = ARCensReg(dat$data$cc, dat$data$lcl, dat$data$ucl, dat$data$y, x,
                  p=2, tol=0.0001)
-fit1
+summary(fit1)
 plot(fit1)
 
 # Plotting the augmented variable

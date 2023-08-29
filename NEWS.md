@@ -1,6 +1,10 @@
 ### News for package ARCensReg
 
-<font color='grey'>**ARCensReg 3.0.0 (2022-08-15)**</font>
+## <font color='grey'>**ARCensReg 3.0.1 (2023-08-29)**</font>
+
+* Minor edits for CRAN submission.
+
+## <font color='grey'>**ARCensReg 3.0.0 (2022-08-15)**</font>
 
 * Incorporate the `ARtCensReg` function to fit a univariate censored linear regression model with autoregressive errors considering Student-t innovations.
 
@@ -17,12 +21,12 @@
 * Some modifications in the arguments of the `InfDiag` function were made. The generic function `plot` is available for outputs of function `InfDiag`. 
 
 
-<font color='grey'>**ARCensReg 2.1 (2016-09-11)**</font>
+## <font color='grey'>**ARCensReg 2.1 (2016-09-11)**</font>
 
 * Minor bugs were fixed.
 
 
-<font color='grey'>**ARCensReg 2.0 (2016-09-09)**</font>
+## <font color='grey'>**ARCensReg 2.0 (2016-09-09)**</font>
 
 * Incorporate the `rARCens` function to simulate censored autoregressive data.
 
@@ -31,6 +35,6 @@
 * The Phosphorus concentration data was added.
 
 
-<font color='grey'>**ARCensReg 1.0 (2016-05-16)**</font>
+## <font color='grey'>**ARCensReg 1.0 (2016-05-16)**</font>
 
 * Initial release.
