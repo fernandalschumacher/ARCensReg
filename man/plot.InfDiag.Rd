@@ -26,7 +26,7 @@ Fernanda L. Schumacher, Katherine L. Valeriano, Victor H. Lachos, Christian E. G
 
 
 \seealso{
-  \code{\link{ggplot}}, \code{\link{InfDiag}}, \code{\link{ARCensReg}}
+  \code{\link[ggplot2]{ggplot}}, \code{\link{InfDiag}}, \code{\link{ARCensReg}}
 }
 \examples{\donttest{
 library(ggplot2)

@@ -1,5 +1,9 @@
 ### News for package ARCensReg
 
+## <font color='grey'>**ARCensReg 3.0.2 (2025-08-25)**</font>
+
+* Minor edits to documentation in response to CRAN's cross-referencing edits.
+
 ## <font color='grey'>**ARCensReg 3.0.1 (2023-08-29)**</font>
 
 * Minor edits for CRAN submission.

@@ -26,7 +26,7 @@ Fernanda L. Schumacher, Katherine L. Valeriano, Victor H. Lachos, Christian E. G
 
 
 \seealso{
-  \code{\link{ggplot}}, \code{\link{ARCensReg}}, \code{\link{ARtCensReg}}, \code{\link{residuals.ARpCRM}}, \code{\link{residuals.ARtpCRM}}
+  \code{\link[ggplot2]{ggplot}}, \code{\link{ARCensReg}}, \code{\link{ARtCensReg}}, \code{\link{residuals.ARpCRM}}, \code{\link{residuals.ARtpCRM}}
 }
 \examples{\donttest{
 ## Example 1: Generating data with normal innovations

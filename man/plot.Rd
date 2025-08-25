@@ -33,7 +33,7 @@ SAEM algorithm that simulations start being smoothed.
 
 
 \seealso{
-\code{\link{ggplot}}, \code{\link{ARCensReg}}, \code{\link{ARtCensReg}}
+\code{\link[ggplot2]{ggplot}}, \code{\link{ARCensReg}}, \code{\link{ARtCensReg}}
 }
 \examples{
 n = 50; x = rep(1, n)
